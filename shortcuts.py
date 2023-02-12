@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/opt/bin/python3
 # coding=utf-8
 
 """
@@ -12,22 +12,23 @@ import time
 import json
 import fcntl
 import errno
-import select
-import signal
 
 from optparse import OptionParser
-import subprocess
+
 
 parser = OptionParser()
-parser.add_option('-v', '--verbose', action='count')
-parser.add_option('-e', '--event', action='store', type='string', default='0',
-                  help='event number e.g. 3 for /dev/input/event3 (default 0)')
+parser.add_option('-v', '--verbose', action='count', default=0)
+parser.add_option('-e', '--event', action='store', type='string',
+                  default='/dev/input/by-path/platform-30a40000.i2c-event',
+                  help='path to event device or index')
 parser.add_option('-p', '--pidfile', action='store', type='string',
                   help='pidfile, also kills old instance if existed')
 parser.add_option('-D', '--daemonize', action='store_true',
                   help='close files and daemonizes. requires -c')
 parser.add_option('-n', '--dry_run', action='store_true',
                   help='Do not actually inject events')
+parser.add_option('-g', '--grab', action='store_true',
+                  help='Grab input e.g. won\'t be sent to remarkable, useful for record')
 parser.add_option('--record', action='store_true',
                   help='record input to stdout (debug)')
 parser.add_option('--replay', action='store_true',
@@ -52,7 +53,10 @@ if (options.pidfile and options.pidfile.endswith('.pid')
 else:
     options.pidfile = None
 
-infile_path = "/dev/input/event%s" % options.event
+if os.path.exists(options.event):
+    infile_path = options.event
+else:
+    infile_path = f"/dev/input/event{options.event}"
 outfile = sys.stdout
 outproc = None
 
@@ -257,7 +261,7 @@ EMUL_PREV = [
 # open file in binary mode
 in_file = os.open(infile_path, os.O_RDWR)
 
-def lock():
+def grab():
     retries = 10
     while retries > 0:
         try:
@@ -280,8 +284,8 @@ def record():
     first_sec = -1
     first_usec = -1
     while True:
-        event = os.read(in_file, EVENT_SIZE)
-        (tv_sec, tv_usec, evtype, code, value) = struct.unpack(FORMAT, event)
+        ev = os.read(in_file, EVENT_SIZE)
+        (tv_sec, tv_usec, evtype, code, value) = struct.unpack(FORMAT, ev)
         if first_sec < 0:
             first_sec = tv_sec
             first_usec = tv_usec
@@ -297,16 +301,21 @@ def replay(source):
     # figure why sleep helps
     time.sleep(0.05)
     tstart = time.time()
-    for line in source:
-        (sec, usec, evtype, code, value) = json.loads(line) if isinstance(line, str) else line
+    for item in source:
+        if isinstance(item, str):
+            (sec, usec, evtype, code, value) = json.loads(item)
+        else:
+            (sec, usec, evtype, code, value) = item
         delay = sec + usec / 1000000 - time.time() + tstart
         if delay > 0:
             time.sleep(delay)
         os.write(in_file, struct.pack(FORMAT, sec, usec, evtype, code, value))
 
 
+if options.grab:
+    grab()
+
 if options.record:
-    lock()
     record()
     # never returns, but just in case..
     sys.exit(1)
@@ -353,7 +362,7 @@ def which_side(finger):
         return None
     if finger.x < 500:
         return Side.LEFT
-    elif finger.x > 700:
+    if finger.x > 700:
         # some blank in the middle too
         return Side.RIGHT
     return None
@@ -465,4 +474,5 @@ while True:
     event = os.read(in_file, EVENT_SIZE)
     parse(*struct.unpack(FORMAT, event))
 
-in_file.close()
+# unreachable...
+os.close(in_file)

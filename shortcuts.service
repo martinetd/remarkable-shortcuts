@@ -1,0 +1,11 @@
+[Unit]
+Description=remaps shortcuts for reMarkable
+After=home.mount
+After=opt.mount
+
+[Service]
+ExecStart=/home/root/shortcuts/shortcuts.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
