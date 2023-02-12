@@ -2,8 +2,8 @@
 
 Read touch events and act on it.
 
-Current v0 watches for double taps in bottom half, left/right and emulates a swipe left or right
-
+Current v0 watches for double taps in bottom half, left/right and emulates a swipe left or right,
+and top to emulate swipe down.
 
 ## Installation
 
@@ -15,5 +15,5 @@ Then just copy shortcuts.py wherever, optionally shortcuts.service in /etc/syste
 ## TODO
 
 - record/replay points instead of raw events (makes it more compact and easier to handle even if less precise, intermediate states between SYN (0) do not matter)
-- make actions configurable?
+- make actions configurable? emulation result is easy, but feature detection might be hard to configure...
 - could imagine toddling with finger instead of pen by sending in events on event1 ?
