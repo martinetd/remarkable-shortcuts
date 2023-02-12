@@ -60,7 +60,7 @@ EVENT_SIZE = struct.calcsize(FORMAT)
 DEBUG = options.verbose
 
 # open file in binary mode
-in_file = open(infile_path, "rb")
+in_file = os.open(infile_path, os.O_RDWR)
 
 if options.daemonize:
     if not options.command:
@@ -162,9 +162,7 @@ def parse(tv_sec, tv_usec, evtype, code, value):
 
 
 while True:
-    (ready, _, _) = select.select([in_file], [], [])
-    if in_file in ready:
-        event = in_file.read(EVENT_SIZE)
-        parse(*struct.unpack(FORMAT, event))
+    event = os.read(in_file, EVENT_SIZE)
+    parse(*struct.unpack(FORMAT, event))
 
 in_file.close()
