@@ -20,5 +20,13 @@ systemctl daemon-reload && systemctl enable --now shortcuts
 ## TODO
 
 - record/replay points instead of raw events (makes it more compact and easier to handle even if less precise, intermediate states between SYN (0) do not matter)
-- make actions configurable? emulation result is easy, but feature detection might be hard to configure...
+- make actions configurable?
+ * keep action separate is a huge plus, having it smaller (see previous point) would help but not hard requirement
+ * feature detection:
+   - detect double-tap not by checking twice for quadrant, but by checking proximity to first click then we can check directly in config
+     (bonus: more than double-tap? that's more work, maybe in v3)
+   - gestures: first approximation checks just down and up coordinates? won't allow e.g. circles but that wouldn't be easy to do anyway.
+   - could also use pressure e.g. only trigger heavy tap? would be easy.
+   - eventually: check how to use major/minor and orientation, apparently large surface of contact? maybe for v3.
+- add an enable/disable shortcut... this is bad for virtual keyboard
 - could imagine toddling with finger instead of pen by sending in events on event1 ?
