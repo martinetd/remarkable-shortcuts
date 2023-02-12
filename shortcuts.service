@@ -4,7 +4,7 @@ After=home.mount
 After=opt.mount
 
 [Service]
-ExecStart=/home/root/shortcuts/shortcuts.py
+ExecStart=/home/root/shortcuts.py
 Restart=on-failure
 
 [Install]

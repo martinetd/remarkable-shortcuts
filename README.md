@@ -7,9 +7,14 @@ and top to emulate swipe down.
 
 ## Installation
 
-This version requires python3 installed (toltec), so install/enable that.
+Installation happens through ssh.
 
-Then just copy shortcuts.py wherever, optionally shortcuts.service in /etc/systemd/system, enable service and forget it
+This version requires python3 installed (e.g. [toltec](https://toltec-dev.org/)), so install/enable that if not done yet.
+
+Then just copy shortcuts.py to /home/root/shortcuts.py, shortcuts.service in /etc/systemd/system, then turn it on and forget it:
+```
+systemctl daemon-reload && systemctl enable --now shortcuts
+```
 
 
 ## TODO
