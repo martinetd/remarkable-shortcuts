@@ -26,6 +26,10 @@ parser.add_option('-p', '--pidfile', action='store', type='string',
                   help='pidfile, also kills old instance if existed')
 parser.add_option('-D', '--daemonize', action='store_true',
                   help='close files and daemonizes. requires -c')
+parser.add_option('--record', action='store_true',
+                  help='record input to stdout')
+parser.add_option('--replay', action='store_true',
+                  help='replay stdin')
 
 (options, args) = parser.parse_args()
 
@@ -61,6 +65,56 @@ DEBUG = options.verbose
 
 # open file in binary mode
 in_file = os.open(infile_path, os.O_RDWR)
+
+def lock():
+    retries = 10
+    while retries > 0:
+        try:
+            # grab device, this is EVIOCGRAB
+            fcntl.ioctl(in_file, 0x40044590, 1)
+            break
+        except IOError:
+            # device busy? XXX kill old and try again?
+            # continue for now
+            if retries <= 1:
+                print("Could not grab, aborting", file=sys.stderr)
+                sys.exit(1)
+        retries -= 1
+        time.sleep(0.2)
+
+def record():
+    first_sec = -1
+    first_usec = -1
+    while True:
+        event = os.read(in_file, EVENT_SIZE)
+        (tv_sec, tv_usec, evtype, code, value) = struct.unpack(FORMAT, event)
+        if first_sec < 0:
+            first_sec = tv_sec
+            first_usec = tv_usec
+        sys.stdout.write(json.dumps(
+            (tv_sec - first_sec, tv_usec - first_usec, evtype, code, value)))
+        sys.stdout.write('\n')
+        sys.stdout.flush()
+
+def replay():
+    tstart = time.time()
+    for line in sys.stdin:
+        (sec, usec, evtype, code, value) = json.loads(line)
+        delay = sec + usec / 1000000 - time.time() + tstart
+        if delay > 0:
+            time.sleep(delay)
+        os.write(in_file, struct.pack(FORMAT, sec, usec, evtype, code, value))
+
+
+if options.record:
+    lock()
+    record()
+    # never returns, but just in case..
+    sys.exit(1)
+
+if options.replay:
+    replay()
+    sys.exit(0)
 
 if options.daemonize:
     if not options.command:
