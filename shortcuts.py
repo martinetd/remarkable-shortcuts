@@ -499,7 +499,7 @@ class Finger():
     # return touch duration in msec
     def release(self, sec, usec):
         self.up_usec = to_usec(sec, usec)
-        return (self.up_usec - self.down_usec) / 1000
+        self.down_time = (self.up_usec - self.down_usec) / 1000
 
 def which_side(finger):
     # only bottom half-ish
@@ -513,6 +513,7 @@ def which_side(finger):
         # some blank in the middle too
         return RIGHT
     return None
+
 
 class Side():
     LEFT = 0
@@ -531,6 +532,24 @@ class Side():
         if self.side != which_side(finger):
             return None
         return ACTIONS[self.side]
+
+
+class Tracking():
+    last_side = None
+
+    def update(self, finger):
+        if finger.down_time < 300:
+            if self.last_side is not None:
+                action = self.last_side.double_tap(finger)
+                if action:
+                    if DEBUG >= 1:
+                        print(f"Running {action['name']}")
+                    state.actions.append(action['action'])
+                    self.last_side = None
+                else:
+                    self.last_side = Side(finger)
+            else:
+                self.last_side = Side(finger)
 
 
 class State():
@@ -568,18 +587,7 @@ class State():
             if DEBUG == 2:
                 print(f"{tv_sec}.{tv_usec:06}: {self.finger.id} up {self.finger.x},{self.finger.y} after {down_time}. Pressure {self.finger.pressure} Orientation {self.finger.orientation}",
                       file=sys.stderr)
-            if down_time < 300:
-                if self.last_side is not None:
-                    action = self.last_side.double_tap(self.finger)
-                    if action:
-                        if DEBUG >= 1:
-                            print(f"Running {action['name']}")
-                        self.actions.append(action['action'])
-                        self.last_side = None
-                    else:
-                        self.last_side = Side(self.finger)
-                else:
-                    self.last_side = Side(self.finger)
+            action = tracking.update(self.finger)
             self.finger = None
             del self.fingers[self.slot_id]
         elif code == 0:
@@ -591,7 +599,7 @@ class State():
                 print(f"{tv_sec}.{tv_usec:06}: Unhandled touch event code {code}, value {value}",
                       file=sys.stderr)
 
-
+tracking = Tracking()
 state = State()
 
 # input codes for multitouch
