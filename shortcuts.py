@@ -34,6 +34,8 @@ parser.add_option('--record', action='store_true',
                   help='record input to stdout (debug)')
 parser.add_option('--replay', action='store_true',
                   help='replay stdin (debug)')
+parser.add_option('--no-sleep', action='store_true',
+                  help='do not sleep during replay (tests)')
 
 (options, args) = parser.parse_args()
 
@@ -70,6 +72,7 @@ FORMAT = 'llHHi'
 EVENT_SIZE = struct.calcsize(FORMAT)
 DEBUG = options.verbose
 DRY_RUN = options.dry_run
+NO_SLEEP = options.no_sleep
 
 # record + sed -e '1i[' -e '$a]' -e 's/$/,/' -e 's/^/    /'
 # long lines slow down ALE too much...
@@ -452,7 +455,7 @@ def replay(source):
         else:
             (sec, usec, evtype, code, value) = item
         delay = sec + usec / 1000000 - time.time() + tstart
-        if delay > 0:
+        if delay > 0 and not NO_SLEEP:
             time.sleep(delay)
         os.write(in_file, struct.pack(FORMAT, sec, usec, evtype, code, value))
 
@@ -631,18 +634,32 @@ def parse(tv_sec, tv_usec, evtype, code, value):
 
 def handle_input():
     timeout = None
-    if state.actions:
+    # NO_SLEEP actually needs to wait a bit for the very first input...
+    if state.actions or NO_SLEEP:
         timeout = 0.05
-    (ready, _, _) = select.select([in_file], [], [], timeout)
+    (ready, _, errors) = select.select([in_file], [], [in_file], timeout)
+    if errors:
+        print("input file in error state!", file=sys.stderr)
+        return False
     if in_file in ready:
         event = os.read(in_file, EVENT_SIZE)
+        if len(event) != EVENT_SIZE:
+            print(f"input file had something to read, but no event or bad length {len(event)}",
+                  file=sys.stderr)
+            return False
         parse(*struct.unpack(FORMAT, event))
     elif state.actions:
         replay(state.actions.pop(0))
+    elif NO_SLEEP:
+        return False
+    return True
 
 
-while True:
-    handle_input()
+while handle_input():
+    pass
+
+while state.actions:
+    replay(state.actions.pop(0))
 
 # unreachable...
 os.close(in_file)
