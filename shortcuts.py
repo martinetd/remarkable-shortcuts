@@ -493,9 +493,16 @@ if options.pidfile:
     with open(options.pidfile, 'w') as pidfile:
         pidfile.write("%d\n" % os.getpid())
 
+
+def point(finger, usec):
+    return dict(usec=usec,
+                x=finger.x,
+                y=finger.y,
+                pressure=finger.pressure,
+                orientation=finger.orientation)
+
+
 class Finger():
-    start_x = -1
-    start_y = -1
     x = -1
     y = -1
     pressure = -1
@@ -504,15 +511,12 @@ class Finger():
     def __init__(self, tracking_id, sec, usec):
         self.id = tracking_id
         self.down_usec = to_usec(sec, usec)
+        self.trace = []
 
     def update(self, code, value):
         if code == ABS_MT_POSITION_X:
-            if self.start_x < 0:
-                self.start_x = value
             self.x = value
         elif code == ABS_MT_POSITION_Y:
-            if self.start_y < 0:
-                self.start_y = value
             self.y = value
         elif code == ABS_MT_PRESSURE:
             self.pressure = value
@@ -525,6 +529,8 @@ class Finger():
             return False
         return True
 
+    def commit(self, usec):
+        self.trace.append(point(self, usec))
 
     # return touch duration in msec
     def release(self, sec, usec):
@@ -588,15 +594,18 @@ class State():
     finger = None
     last_side = None
     actions = []
+    updated = {}
 
     def update(self, tv_sec, tv_usec, code, value):
         if code == ABS_MT_SLOT:
             self.slot_id = value
             self.finger = self.fingers.get(value)
+            self.updated[value] = self.finger
             return
         if code == ABS_MT_TRACKING_ID and value >= 0:
             self.finger = Finger(value, tv_sec, tv_usec)
             self.fingers[self.slot_id] = self.finger
+            self.updated[self.slot_id] = self.finger
             return
 
         if self.finger is None:
@@ -606,7 +615,7 @@ class State():
             return
 
         if self.finger.update(code, value):
-            pass
+            self.updated[self.slot_id] = self.finger
         elif code == ABS_MT_TRACKING_ID:
             # value < 0
             down_time = self.finger.release(tv_sec, tv_usec)
@@ -620,6 +629,10 @@ class State():
             if DEBUG == 2:
                 print(f"{tv_sec}.{tv_usec:06}: {self.finger.id} pressed {self.finger.x},{self.finger.y}. Pressure {self.finger.pressure} Orientation {self.finger.orientation}",
                       file=sys.stderr)
+            usec = to_usec(tv_sec, tv_usec)
+            for finger in self.updated.values():
+                finger.commit(usec)
+            self.updated = {}
         else:
             if DEBUG == 1:
                 print(f"{tv_sec}.{tv_usec:06}: Unhandled touch event code {code}, value {value}",
