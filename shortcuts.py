@@ -543,6 +543,7 @@ class State():
     def update(self, tv_sec, tv_usec, code, value):
         if code == ABS_MT_SLOT:
             self.slot_id = value
+            self.finger = self.fingers.get(value)
             return
         if code == ABS_MT_TRACKING_ID and value >= 0:
             self.finger = Finger(value, tv_sec, tv_usec)
