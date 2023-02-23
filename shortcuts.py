@@ -69,334 +69,166 @@ https://github.com/torvalds/linux/blob/v5.5-rc5/include/uapi/linux/input.h#L28
 Stands for: long int, long int, unsigned short, unsigned short, unsigned int
 """
 FORMAT = 'llHHi'
+
+# input codes for multitouch
+ABS_MT_SLOT = 47
+ABS_MT_TOUCH_MAJOR = 48
+ABS_MT_TOUCH_MINOR = 49
+ABS_MT_ORIENTATION = 52
+ABS_MT_POSITION_X = 53
+ABS_MT_POSITION_Y = 54
+ABS_MT_TRACKING_ID = 57
+ABS_MT_PRESSURE = 58
+
+
 EVENT_SIZE = struct.calcsize(FORMAT)
 DEBUG = options.verbose
 DRY_RUN = options.dry_run
 NO_SLEEP = options.no_sleep
+RECORD = options.record
 
 # record + sed -e '1i[' -e '$a]' -e 's/$/,/' -e 's/^/    /'
 # long lines slow down ALE too much...
 EMUL_PREV = [
-    [0, 0, 3, 47, 0],
-    [0, 0, 3, 57, 1279],
-    [0, 0, 3, 53, 417],
-    [0, 0, 3, 54, 704],
-    [0, 0, 3, 58, 103],
-    [0, 0, 0, 0, 0],
-    [0, 21576, 3, 53, 420],
-    [0, 21576, 3, 58, 109],
-    [0, 21576, 0, 0, 0],
-    [0, 29799, 3, 53, 424],
-    [0, 29799, 3, 58, 106],
-    [0, 29799, 3, 49, 17],
-    [0, 29799, 3, 52, 4],
-    [0, 29799, 0, 0, 0],
-    [0, 39680, 3, 53, 430],
-    [0, 39680, 3, 58, 108],
-    [0, 39680, 0, 0, 0],
-    [0, 51543, 3, 53, 438],
-    [0, 51543, 3, 58, 116],
-    [0, 51543, 0, 0, 0],
-    [0, 63654, 3, 53, 450],
-    [0, 63654, 3, 58, 114],
-    [0, 63654, 3, 52, 3],
-    [0, 63654, 0, 0, 0],
-    [0, 75201, 3, 53, 466],
-    [0, 75201, 3, 58, 115],
-    [0, 75201, 3, 52, 4],
-    [0, 75201, 0, 0, 0],
-    [0, 87350, 3, 53, 486],
-    [0, 87350, 3, 58, 112],
-    [0, 87350, 0, 0, 0],
-    [0, 99187, 3, 53, 511],
-    [0, 99187, 3, 58, 117],
-    [0, 99187, 3, 52, 3],
-    [0, 99187, 0, 0, 0],
-    [0, 111023, 3, 53, 543],
-    [0, 111023, 3, 58, 118],
-    [0, 111023, 3, 49, 8],
-    [0, 111023, 3, 52, 2],
-    [0, 111023, 0, 0, 0],
-    [0, 122664, 3, 53, 582],
-    [0, 122664, 3, 58, 113],
-    [0, 122664, 0, 0, 0],
-    [0, 134846, 3, 53, 623],
-    [0, 134846, 3, 58, 112],
-    [0, 134846, 3, 49, 17],
-    [0, 134846, 3, 52, 4],
-    [0, 134846, 0, 0, 0],
-    [0, 146577, 3, 53, 671],
-    [0, 146577, 3, 58, 119],
-    [0, 146577, 0, 0, 0],
-    [0, 158615, 3, 53, 719],
-    [0, 158615, 3, 58, 120],
-    [0, 158615, 0, 0, 0],
-    [0, 170152, 3, 53, 768],
-    [0, 170152, 3, 58, 116],
-    [0, 170152, 3, 52, 3],
-    [0, 170152, 0, 0, 0],
-    [0, 182140, 3, 53, 817],
-    [0, 182140, 3, 54, 706],
-    [0, 182140, 3, 58, 112],
-    [0, 182140, 3, 52, 4],
-    [0, 182140, 0, 0, 0],
-    [0, 194107, 3, 53, 864],
-    [0, 194107, 3, 54, 708],
-    [0, 194107, 3, 58, 113],
-    [0, 194107, 0, 0, 0],
-    [0, 205915, 3, 53, 905],
-    [0, 205915, 3, 54, 709],
-    [0, 205915, 3, 52, 3],
-    [0, 205915, 0, 0, 0],
-    [0, 217736, 3, 53, 945],
-    [0, 217736, 3, 54, 711],
-    [0, 217736, 3, 58, 115],
-    [0, 217736, 3, 49, 8],
-    [0, 217736, 3, 52, 2],
-    [0, 217736, 0, 0, 0],
-    [0, 229482, 3, 53, 980],
-    [0, 229482, 3, 54, 712],
-    [0, 229482, 3, 49, 17],
-    [0, 229482, 3, 52, 3],
-    [0, 229482, 0, 0, 0],
-    [0, 241356, 3, 53, 1015],
-    [0, 241356, 3, 54, 713],
-    [0, 241356, 3, 58, 109],
-    [0, 241356, 3, 52, 4],
-    [0, 241356, 0, 0, 0],
-    [0, 253283, 3, 53, 1049],
-    [0, 253283, 3, 54, 714],
-    [0, 253283, 3, 58, 112],
-    [0, 253283, 3, 52, 3],
-    [0, 253283, 0, 0, 0],
-    [0, 265297, 3, 53, 1082],
-    [0, 265297, 3, 58, 114],
-    [0, 265297, 0, 0, 0],
-    [0, 277131, 3, 53, 1108],
-    [0, 277131, 3, 54, 715],
-    [0, 277131, 3, 58, 117],
-    [0, 277131, 0, 0, 0],
-    [0, 289091, 3, 53, 1132],
-    [0, 289091, 3, 58, 111],
-    [0, 289091, 3, 52, 4],
-    [0, 289091, 0, 0, 0],
-    [0, 300711, 3, 53, 1154],
-    [0, 300711, 3, 58, 110],
-    [0, 300711, 3, 52, 3],
-    [0, 300711, 0, 0, 0],
-    [0, 312700, 3, 53, 1173],
-    [0, 312700, 3, 54, 713],
-    [0, 312700, 3, 58, 91],
-    [0, 312700, 3, 49, 8],
-    [0, 312700, 3, 52, 2],
-    [0, 312700, 0, 0, 0],
-    [0, 348065, 3, 57, -1],
-    [0, 348065, 0, 0, 0],
+    ["UPDATE", 1677239624.38075, {"0": {"id": 3675, "x": 797, "y": 758, "pressure": 68, "orientation": 4, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239624.389091, {"0": {"id": 3675, "x": 795, "y": 758, "pressure": 69, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239624.397917, {"0": {"id": 3675, "x": 789, "y": 759, "pressure": 70, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239624.407299, {"0": {"id": 3675, "x": 780, "y": 761, "pressure": 70, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239624.419612, {"0": {"id": 3675, "x": 771, "y": 763, "pressure": 71, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239624.431601, {"0": {"id": 3675, "x": 757, "y": 766, "pressure": 70, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239624.443478, {"0": {"id": 3675, "x": 741, "y": 769, "pressure": 71, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239624.455402, {"0": {"id": 3675, "x": 721, "y": 773, "pressure": 71, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239624.467275, {"0": {"id": 3675, "x": 697, "y": 776, "pressure": 73, "orientation": 1, "touch_minor": 8, "touch_major": 8}}],
+    ["UPDATE", 1677239624.479207, {"0": {"id": 3675, "x": 669, "y": 779, "pressure": 73, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239624.490972, {"0": {"id": 3675, "x": 629, "y": 783, "pressure": 73, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239624.502855, {"0": {"id": 3675, "x": 588, "y": 786, "pressure": 73, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239624.514815, {"0": {"id": 3675, "x": 548, "y": 788, "pressure": 75, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239624.52669, {"0": {"id": 3675, "x": 515, "y": 791, "pressure": 75, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239624.538621, {"0": {"id": 3675, "x": 488, "y": 794, "pressure": 76, "orientation": 4, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239624.550521, {"0": {"id": 3675, "x": 462, "y": 797, "pressure": 78, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239624.562394, {"0": {"id": 3675, "x": 438, "y": 800, "pressure": 79, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239624.574244, {"0": {"id": 3675, "x": 416, "y": 803, "pressure": 78, "orientation": 4, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239624.586075, {"0": {"id": 3675, "x": 397, "y": 806, "pressure": 79, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239624.598035, {"0": {"id": 3675, "x": 379, "y": 808, "pressure": 79, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239624.609936, {"0": {"id": 3675, "x": 363, "y": 809, "pressure": 79, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239624.621807, {"0": {"id": 3675, "x": 348, "y": 810, "pressure": 77, "orientation": 4, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239624.633653, {"0": {"id": 3675, "x": 334, "y": 810, "pressure": 75, "orientation": 4, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239624.645549, {"0": {"id": 3675, "x": 321, "y": 809, "pressure": 69, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239624.657321, {"0": {"id": 3675, "x": 310, "y": 806, "pressure": 50, "orientation": 1, "touch_minor": 8, "touch_major": 8}}],
+    ["RELEASE", 1677239624.692669, {"0": {}}],
 ]
 
 EMUL_NEXT = [
-    [0, 0, 3, 57, 1273],
-    [0, 0, 3, 53, 1008],
-    [0, 0, 3, 54, 792],
-    [0, 0, 3, 58, 114],
-    [0, 0, 3, 48, 17],
-    [0, 0, 3, 49, 17],
-    [0, 0, 3, 52, 3],
-    [0, 0, 0, 0, 0],
-    [0, 8254, 3, 53, 1003],
-    [0, 8254, 3, 58, 117],
-    [0, 8254, 0, 0, 0],
-    [0, 17036, 3, 53, 991],
-    [0, 17036, 3, 58, 108],
-    [0, 17036, 0, 0, 0],
-    [0, 27041, 3, 53, 974],
-    [0, 27041, 3, 54, 793],
-    [0, 27041, 0, 0, 0],
-    [0, 38558, 3, 53, 950],
-    [0, 38558, 3, 49, 8],
-    [0, 38558, 3, 52, 2],
-    [0, 38558, 0, 0, 0],
-    [0, 50972, 3, 53, 915],
-    [0, 50972, 3, 54, 794],
-    [0, 50972, 3, 58, 101],
-    [0, 50972, 0, 0, 0],
-    [0, 62781, 3, 53, 856],
-    [0, 62781, 3, 54, 795],
-    [0, 62781, 3, 58, 103],
-    [0, 62781, 3, 49, 17],
-    [0, 62781, 3, 52, 3],
-    [0, 62781, 0, 0, 0],
-    [0, 74709, 3, 53, 797],
-    [0, 74709, 3, 54, 796],
-    [0, 74709, 3, 58, 107],
-    [0, 74709, 0, 0, 0],
-    [0, 86467, 3, 53, 729],
-    [0, 86467, 3, 54, 797],
-    [0, 86467, 3, 58, 108],
-    [0, 86467, 3, 49, 8],
-    [0, 86467, 3, 52, 2],
-    [0, 86467, 0, 0, 0],
-    [0, 98329, 3, 53, 663],
-    [0, 98329, 3, 58, 104],
-    [0, 98329, 0, 0, 0],
-    [0, 110353, 3, 53, 604],
-    [0, 110353, 3, 58, 102],
-    [0, 110353, 3, 49, 17],
-    [0, 110353, 3, 52, 3],
-    [0, 110353, 0, 0, 0],
-    [0, 122313, 3, 53, 546],
-    [0, 122313, 3, 58, 96],
-    [0, 122313, 0, 0, 0],
-    [0, 134096, 3, 53, 497],
-    [0, 134096, 3, 54, 796],
-    [0, 134096, 3, 58, 84],
-    [0, 134096, 3, 48, 8],
-    [0, 134096, 3, 52, 2],
-    [0, 134096, 0, 0, 0],
-    [0, 146026, 3, 53, 446],
-    [0, 146026, 3, 54, 793],
-    [0, 146026, 3, 58, 66],
-    [0, 146026, 0, 0, 0],
-    [0, 181453, 3, 57, -1],
-    [0, 181453, 0, 0, 0],
+    ["UPDATE", 1677239631.534614, {"0": {"id": 3676, "x": 415, "y": 784, "pressure": 64, "orientation": 2, "touch_minor": 17}}],
+    ["UPDATE", 1677239631.551358, {"0": {"id": 3676, "x": 422, "y": 784, "pressure": 65, "orientation": 2, "touch_minor": 17}}],
+    ["UPDATE", 1677239631.561477, {"0": {"id": 3676, "x": 429, "y": 784, "pressure": 63, "orientation": 2, "touch_minor": 17}}],
+    ["UPDATE", 1677239631.573318, {"0": {"id": 3676, "x": 439, "y": 784, "pressure": 65, "orientation": 1, "touch_minor": 8}}],
+    ["UPDATE", 1677239631.585088, {"0": {"id": 3676, "x": 454, "y": 784, "pressure": 64, "orientation": 2, "touch_minor": 17}}],
+    ["UPDATE", 1677239631.597212, {"0": {"id": 3676, "x": 473, "y": 784, "pressure": 65, "orientation": 1, "touch_minor": 8}}],
+    ["UPDATE", 1677239631.609111, {"0": {"id": 3676, "x": 495, "y": 783, "pressure": 65, "orientation": 2, "touch_minor": 17}}],
+    ["UPDATE", 1677239631.621011, {"0": {"id": 3676, "x": 519, "y": 783, "pressure": 64, "orientation": 2, "touch_minor": 17}}],
+    ["UPDATE", 1677239631.632884, {"0": {"id": 3676, "x": 546, "y": 782, "pressure": 64, "orientation": 1, "touch_minor": 8}}],
+    ["UPDATE", 1677239631.644809, {"0": {"id": 3676, "x": 574, "y": 782, "pressure": 62, "orientation": 2, "touch_minor": 17}}],
+    ["UPDATE", 1677239631.656685, {"0": {"id": 3676, "x": 606, "y": 781, "pressure": 64, "orientation": 2, "touch_minor": 17}}],
+    ["UPDATE", 1677239631.668583, {"0": {"id": 3676, "x": 634, "y": 781, "pressure": 63, "orientation": 2, "touch_minor": 17}}],
+    ["UPDATE", 1677239631.680481, {"0": {"id": 3676, "x": 665, "y": 781, "pressure": 63, "orientation": 2, "touch_minor": 17}}],
+    ["UPDATE", 1677239631.692298, {"0": {"id": 3676, "x": 692, "y": 783, "pressure": 67, "orientation": 1, "touch_minor": 8}}],
+    ["UPDATE", 1677239631.704103, {"0": {"id": 3676, "x": 719, "y": 785, "pressure": 67, "orientation": 2, "touch_minor": 17}}],
+    ["UPDATE", 1677239631.716001, {"0": {"id": 3676, "x": 744, "y": 788, "pressure": 69, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239631.727881, {"0": {"id": 3676, "x": 769, "y": 791, "pressure": 67, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239631.739379, {"0": {"id": 3676, "x": 792, "y": 794, "pressure": 67, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239631.75174, {"0": {"id": 3676, "x": 814, "y": 796, "pressure": 68, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239631.76362, {"0": {"id": 3676, "x": 833, "y": 798, "pressure": 68, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239631.775247, {"0": {"id": 3676, "x": 850, "y": 800, "pressure": 66, "orientation": 4, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239631.787263, {"0": {"id": 3676, "x": 865, "y": 801, "pressure": 67, "orientation": 4, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239631.799288, {"0": {"id": 3676, "x": 878, "y": 802, "pressure": 68, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239631.811124, {"0": {"id": 3676, "x": 890, "y": 802, "pressure": 67, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239631.823055, {"0": {"id": 3676, "x": 901, "y": 802, "pressure": 68, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239631.834901, {"0": {"id": 3676, "x": 910, "y": 802, "pressure": 68, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239631.846796, {"0": {"id": 3676, "x": 918, "y": 802, "pressure": 67, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239631.858728, {"0": {"id": 3676, "x": 925, "y": 802, "pressure": 67, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239631.870568, {"0": {"id": 3676, "x": 931, "y": 802, "pressure": 67, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239631.882498, {"0": {"id": 3676, "x": 936, "y": 802, "pressure": 64, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239631.894284, {"0": {"id": 3676, "x": 940, "y": 802, "pressure": 65, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239631.90609, {"0": {"id": 3676, "x": 944, "y": 802, "pressure": 65, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239631.918052, {"0": {"id": 3676, "x": 947, "y": 802, "pressure": 65, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239631.930013, {"0": {"id": 3676, "x": 951, "y": 801, "pressure": 65, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239631.941798, {"0": {"id": 3676, "x": 955, "y": 800, "pressure": 64, "orientation": 1, "touch_minor": 8, "touch_major": 8}}],
+    ["UPDATE", 1677239631.953671, {"0": {"id": 3676, "x": 960, "y": 799, "pressure": 63, "orientation": 1, "touch_minor": 8, "touch_major": 8}}],
+    ["UPDATE", 1677239631.965048, {"0": {"id": 3676, "x": 965, "y": 798, "pressure": 61, "orientation": 1, "touch_minor": 8, "touch_major": 8}}],
+    ["UPDATE", 1677239631.97741, {"0": {"id": 3676, "x": 972, "y": 797, "pressure": 57, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239631.989369, {"0": {"id": 3676, "x": 978, "y": 795, "pressure": 37, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["RELEASE", 1677239632.024423, {"0": {}}],
 ]
 
 EMUL_HOME = [
-    [0, 0, 3, 57, 1549],
-    [0, 0, 3, 53, 751],
-    [0, 0, 3, 54, 1854],
-    [0, 0, 3, 58, 85],
-    [0, 0, 0, 0, 0],
-    [0, 26802, 3, 54, 1851],
-    [0, 26802, 3, 58, 101],
-    [0, 26802, 3, 48, 17],
-    [0, 26802, 3, 52, 4],
-    [0, 26802, 0, 0, 0],
-    [0, 39007, 3, 54, 1848],
-    [0, 39007, 3, 58, 109],
-    [0, 39007, 0, 0, 0],
-    [0, 50914, 3, 54, 1843],
-    [0, 50914, 3, 58, 114],
-    [0, 50914, 0, 0, 0],
-    [0, 62655, 3, 54, 1837],
-    [0, 62655, 3, 58, 119],
-    [0, 62655, 0, 0, 0],
-    [0, 74468, 3, 54, 1827],
-    [0, 74468, 3, 58, 115],
-    [0, 74468, 3, 48, 8],
-    [0, 74468, 3, 52, 2],
-    [0, 74468, 0, 0, 0],
-    [0, 86460, 3, 54, 1815],
-    [0, 86460, 3, 58, 116],
-    [0, 86460, 3, 48, 17],
-    [0, 86460, 3, 52, 4],
-    [0, 86460, 0, 0, 0],
-    [0, 97872, 3, 53, 750],
-    [0, 97872, 3, 54, 1803],
-    [0, 97872, 3, 58, 119],
-    [0, 97872, 0, 0, 0],
-    [0, 110148, 3, 53, 749],
-    [0, 110148, 3, 54, 1788],
-    [0, 110148, 3, 58, 116],
-    [0, 110148, 3, 48, 8],
-    [0, 110148, 3, 52, 2],
-    [0, 110148, 0, 0, 0],
-    [0, 122073, 3, 53, 748],
-    [0, 122073, 3, 54, 1772],
-    [0, 122073, 3, 58, 117],
-    [0, 122073, 3, 48, 17],
-    [0, 122073, 3, 52, 4],
-    [0, 122073, 0, 0, 0],
-    [0, 133821, 3, 54, 1754],
-    [0, 133821, 3, 58, 111],
-    [0, 133821, 3, 48, 8],
-    [0, 133821, 3, 52, 2],
-    [0, 133821, 0, 0, 0],
-    [0, 145812, 3, 54, 1733],
-    [0, 145812, 3, 58, 113],
-    [0, 145812, 3, 48, 17],
-    [0, 145812, 3, 52, 4],
-    [0, 145812, 0, 0, 0],
-    [0, 157627, 3, 54, 1710],
-    [0, 157627, 3, 58, 106],
-    [0, 157627, 3, 48, 8],
-    [0, 157627, 3, 52, 2],
-    [0, 157627, 0, 0, 0],
-    [0, 168700, 3, 54, 1685],
-    [0, 168700, 3, 48, 17],
-    [0, 168700, 3, 52, 3],
-    [0, 168700, 0, 0, 0],
-    [0, 181279, 3, 54, 1657],
-    [0, 181279, 3, 58, 108],
-    [0, 181279, 3, 52, 4],
-    [0, 181279, 0, 0, 0],
-    [0, 192762, 3, 53, 750],
-    [0, 192762, 3, 54, 1618],
-    [0, 192762, 3, 58, 102],
-    [0, 192762, 3, 48, 8],
-    [0, 192762, 3, 52, 2],
-    [0, 192762, 0, 0, 0],
-    [0, 205104, 3, 53, 752],
-    [0, 205104, 3, 54, 1577],
-    [0, 205104, 3, 58, 95],
-    [0, 205104, 0, 0, 0],
-    [0, 217004, 3, 54, 1536],
-    [0, 217004, 3, 58, 89],
-    [0, 217004, 0, 0, 0],
-    [0, 228905, 3, 54, 1494],
-    [0, 228905, 3, 58, 85],
-    [0, 228905, 0, 0, 0],
-    [0, 240753, 3, 54, 1446],
-    [0, 240753, 3, 58, 87],
-    [0, 240753, 0, 0, 0],
-    [0, 252590, 3, 53, 749],
-    [0, 252590, 3, 54, 1404],
-    [0, 252590, 3, 58, 89],
-    [0, 252590, 3, 48, 17],
-    [0, 252590, 3, 52, 3],
-    [0, 252590, 0, 0, 0],
-    [0, 264456, 3, 53, 747],
-    [0, 264456, 3, 54, 1362],
-    [0, 264456, 0, 0, 0],
-    [0, 276332, 3, 53, 744],
-    [0, 276332, 3, 54, 1321],
-    [0, 276332, 3, 58, 84],
-    [0, 276332, 3, 48, 8],
-    [0, 276332, 3, 52, 2],
-    [0, 276332, 0, 0, 0],
-    [0, 288200, 3, 53, 742],
-    [0, 288200, 3, 54, 1288],
-    [0, 288200, 3, 58, 86],
-    [0, 288200, 0, 0, 0],
-    [0, 300169, 3, 53, 740],
-    [0, 300169, 3, 54, 1260],
-    [0, 300169, 3, 58, 87],
-    [0, 300169, 3, 48, 17],
-    [0, 300169, 3, 52, 3],
-    [0, 300169, 0, 0, 0],
-    [0, 311976, 3, 54, 1233],
-    [0, 311976, 3, 58, 89],
-    [0, 311976, 3, 48, 8],
-    [0, 311976, 3, 52, 2],
-    [0, 311976, 0, 0, 0],
-    [0, 323721, 3, 54, 1208],
-    [0, 323721, 3, 58, 85],
-    [0, 323721, 0, 0, 0],
-    [0, 335654, 3, 54, 1184],
-    [0, 335654, 3, 58, 86],
-    [0, 335654, 3, 48, 17],
-    [0, 335654, 3, 52, 4],
-    [0, 335654, 0, 0, 0],
-    [0, 347556, 3, 54, 1161],
-    [0, 347556, 3, 58, 76],
-    [0, 347556, 3, 48, 8],
-    [0, 347556, 3, 52, 2],
-    [0, 347556, 0, 0, 0],
-    [0, 359393, 3, 54, 1140],
-    [0, 359393, 3, 58, 65],
-    [0, 359393, 0, 0, 0],
-    [0, 394798, 3, 57, -1],
-    [0, 394798, 0, 0, 0],
+    ["UPDATE", 1677239637.951058, {"0": {"id": 3677, "x": 555, "y": 1826, "pressure": 72, "orientation": 4, "touch_major": 17}}],
+    ["UPDATE", 1677239637.991081, {"0": {"id": 3677, "x": 553, "y": 1827, "pressure": 79, "orientation": 4, "touch_major": 17}}],
+    ["UPDATE", 1677239638.002851, {"0": {"id": 3677, "x": 553, "y": 1828, "pressure": 79, "orientation": 4, "touch_major": 17}}],
+    ["UPDATE", 1677239638.014508, {"0": {"id": 3677, "x": 552, "y": 1828, "pressure": 81, "orientation": 4, "touch_major": 17}}],
+    ["UPDATE", 1677239638.050445, {"0": {"id": 3677, "x": 552, "y": 1826, "pressure": 81, "orientation": 4, "touch_major": 17}}],
+    ["UPDATE", 1677239638.062358, {"0": {"id": 3677, "x": 553, "y": 1821, "pressure": 79, "orientation": 2, "touch_major": 8}}],
+    ["UPDATE", 1677239638.074059, {"0": {"id": 3677, "x": 555, "y": 1814, "pressure": 80, "orientation": 3, "touch_major": 17}}],
+    ["UPDATE", 1677239638.085975, {"0": {"id": 3677, "x": 557, "y": 1805, "pressure": 85, "orientation": 3, "touch_major": 17}}],
+    ["UPDATE", 1677239638.097842, {"0": {"id": 3677, "x": 560, "y": 1794, "pressure": 82, "orientation": 3, "touch_major": 17}}],
+    ["UPDATE", 1677239638.109786, {"0": {"id": 3677, "x": 562, "y": 1780, "pressure": 80, "orientation": 3, "touch_major": 17}}],
+    ["UPDATE", 1677239638.121478, {"0": {"id": 3677, "x": 564, "y": 1765, "pressure": 84, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239638.133618, {"0": {"id": 3677, "x": 565, "y": 1746, "pressure": 78, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239638.145096, {"0": {"id": 3677, "x": 565, "y": 1726, "pressure": 80, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239638.157082, {"0": {"id": 3677, "x": 565, "y": 1701, "pressure": 79, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239638.169108, {"0": {"id": 3677, "x": 564, "y": 1676, "pressure": 74, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239638.181096, {"0": {"id": 3677, "x": 561, "y": 1649, "pressure": 76, "orientation": 4, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239638.192963, {"0": {"id": 3677, "x": 558, "y": 1616, "pressure": 74, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239638.204522, {"0": {"id": 3677, "x": 554, "y": 1588, "pressure": 73, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239638.216115, {"0": {"id": 3677, "x": 549, "y": 1556, "pressure": 76, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239638.228524, {"0": {"id": 3677, "x": 545, "y": 1529, "pressure": 70, "orientation": 1, "touch_minor": 8, "touch_major": 8}}],
+    ["UPDATE", 1677239638.240422, {"0": {"id": 3677, "x": 540, "y": 1503, "pressure": 73, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239638.252317, {"0": {"id": 3677, "x": 535, "y": 1477, "pressure": 70, "orientation": 1, "touch_minor": 8, "touch_major": 8}}],
+    ["UPDATE", 1677239638.264255, {"0": {"id": 3677, "x": 530, "y": 1453, "pressure": 70, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239638.276242, {"0": {"id": 3677, "x": 526, "y": 1432, "pressure": 73, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239638.287988, {"0": {"id": 3677, "x": 523, "y": 1414, "pressure": 71, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239638.299872, {"0": {"id": 3677, "x": 519, "y": 1398, "pressure": 68, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239638.31179, {"0": {"id": 3677, "x": 516, "y": 1384, "pressure": 67, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239638.323637, {"0": {"id": 3677, "x": 514, "y": 1372, "pressure": 67, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239638.335656, {"0": {"id": 3677, "x": 512, "y": 1362, "pressure": 66, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239638.347277, {"0": {"id": 3677, "x": 510, "y": 1354, "pressure": 65, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239638.359313, {"0": {"id": 3677, "x": 507, "y": 1346, "pressure": 51, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["RELEASE", 1677239638.394528, {"0": {}}],
+]
+
+EMUL_RECENT = [
+    ["UPDATE", 1677239646.332618, {"0": {"id": 3678, "x": 508, "y": 1731, "pressure": 53}, "1": {"id": 3679, "x": 715, "y": 1747, "pressure": 44, "orientation": 1, "touch_minor": 8}}],
+    ["UPDATE", 1677239646.354335, {"1": {"id": 3679, "x": 715, "y": 1745, "pressure": 49, "orientation": 1, "touch_minor": 8}}],
+    ["UPDATE", 1677239646.365659, {"1": {"id": 3679, "x": 715, "y": 1741, "pressure": 53, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239646.377602, {"0": {"id": 3678, "x": 508, "y": 1728, "pressure": 58}, "1": {"id": 3679, "x": 715, "y": 1736, "pressure": 52, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239646.39012, {"0": {"id": 3678, "x": 508, "y": 1724, "pressure": 57, "orientation": 2, "touch_major": 8}, "1": {"id": 3679, "x": 715, "y": 1728, "pressure": 49, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239646.401834, {"0": {"id": 3678, "x": 508, "y": 1715, "pressure": 55, "orientation": 2, "touch_major": 8}, "1": {"id": 3679, "x": 714, "y": 1718, "pressure": 52, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239646.412896, {"0": {"id": 3678, "x": 508, "y": 1706, "pressure": 62, "orientation": 3, "touch_major": 17}, "1": {"id": 3679, "x": 712, "y": 1705, "pressure": 52, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239646.425572, {"0": {"id": 3678, "x": 508, "y": 1694, "pressure": 57, "orientation": 2, "touch_major": 8}, "1": {"id": 3679, "x": 711, "y": 1689, "pressure": 47, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239646.436952, {"0": {"id": 3678, "x": 508, "y": 1679, "pressure": 58, "orientation": 2, "touch_major": 8}, "1": {"id": 3679, "x": 709, "y": 1672, "pressure": 54, "orientation": 4, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239646.449473, {"0": {"id": 3678, "x": 508, "y": 1663, "pressure": 59, "orientation": 3, "touch_major": 17}, "1": {"id": 3679, "x": 707, "y": 1653, "pressure": 48, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239646.460595, {"0": {"id": 3678, "x": 507, "y": 1644, "pressure": 56, "orientation": 2, "touch_major": 8}, "1": {"id": 3679, "x": 704, "y": 1632, "pressure": 57, "orientation": 4, "touch_minor": 17, "touch_major": 17}}],
+    ["UPDATE", 1677239646.473027, {"0": {"id": 3678, "x": 505, "y": 1625, "pressure": 62, "orientation": 4, "touch_major": 17}, "1": {"id": 3679, "x": 702, "y": 1610, "pressure": 49, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239646.484565, {"0": {"id": 3678, "x": 504, "y": 1604, "pressure": 55, "orientation": 2, "touch_major": 8}, "1": {"id": 3679, "x": 698, "y": 1587, "pressure": 57, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239646.496172, {"0": {"id": 3678, "x": 502, "y": 1584, "pressure": 64, "orientation": 4, "touch_major": 17}, "1": {"id": 3679, "x": 695, "y": 1563, "pressure": 49, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239646.508724, {"0": {"id": 3678, "x": 501, "y": 1562, "pressure": 56, "orientation": 2, "touch_major": 8}, "1": {"id": 3679, "x": 691, "y": 1540, "pressure": 57, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239646.520776, {"0": {"id": 3678, "x": 499, "y": 1540, "pressure": 64, "orientation": 3, "touch_major": 17}, "1": {"id": 3679, "x": 687, "y": 1516, "pressure": 48, "orientation": 1, "touch_minor": 8, "touch_major": 8}}],
+    ["UPDATE", 1677239646.532607, {"0": {"id": 3678, "x": 498, "y": 1519, "pressure": 54, "orientation": 2, "touch_major": 8}, "1": {"id": 3679, "x": 683, "y": 1493, "pressure": 55, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239646.544443, {"0": {"id": 3678, "x": 496, "y": 1498, "pressure": 59, "orientation": 2, "touch_major": 8}, "1": {"id": 3679, "x": 680, "y": 1471, "pressure": 52, "orientation": 1, "touch_minor": 8, "touch_major": 8}}],
+    ["UPDATE", 1677239646.555427, {"0": {"id": 3678, "x": 495, "y": 1478, "pressure": 62, "orientation": 4, "touch_major": 17}, "1": {"id": 3679, "x": 677, "y": 1450, "pressure": 49, "orientation": 2, "touch_minor": 17, "touch_major": 8}}],
+    ["UPDATE", 1677239646.567114, {"0": {"id": 3678, "x": 494, "y": 1460, "pressure": 54, "orientation": 2, "touch_major": 8}, "1": {"id": 3679, "x": 675, "y": 1432, "pressure": 52, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239646.580004, {"0": {"id": 3678, "x": 492, "y": 1442, "pressure": 54, "orientation": 2, "touch_major": 8}, "1": {"id": 3679, "x": 674, "y": 1415, "pressure": 53, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239646.59181, {"0": {"id": 3678, "x": 492, "y": 1427, "pressure": 58, "orientation": 2, "touch_major": 8}, "1": {"id": 3679, "x": 674, "y": 1401, "pressure": 49, "orientation": 2, "touch_minor": 8, "touch_major": 17}}],
+    ["UPDATE", 1677239646.603953, {"0": {"id": 3678, "x": 491, "y": 1414, "pressure": 60, "orientation": 3, "touch_major": 17}, "1": {"id": 3679, "x": 674, "y": 1389, "pressure": 47, "orientation": 1, "touch_minor": 8, "touch_major": 8}}],
+    ["UPDATE", 1677239646.615341, {"0": {"id": 3678, "x": 490, "y": 1403, "pressure": 59, "orientation": 3, "touch_major": 17}, "1": {"id": 3679, "x": 674, "y": 1378, "pressure": 46, "orientation": 1, "touch_minor": 8, "touch_major": 8}}],
+    ["UPDATE", 1677239646.62764, {"0": {"id": 3678, "x": 489, "y": 1393, "pressure": 56, "orientation": 2, "touch_minor": 8, "touch_major": 17}, "1": {"id": 3679, "x": 674, "y": 1369, "pressure": 44, "orientation": 1, "touch_minor": 8, "touch_major": 8}}],
+    ["UPDATE", 1677239646.638164, {"0": {"id": 3678, "x": 488, "y": 1382, "pressure": 52, "orientation": 1, "touch_minor": 8, "touch_major": 8}, "1": {"id": 3679, "x": 674, "y": 1362, "pressure": 43, "orientation": 1, "touch_minor": 8, "touch_major": 8}}],
+    ["UPDATE", 1677239646.651424, {"0": {"id": 3678, "x": 486, "y": 1372, "pressure": 46, "orientation": 1, "touch_minor": 8, "touch_major": 8}, "1": {"id": 3679, "x": 675, "y": 1355, "pressure": 41, "orientation": 1, "touch_minor": 8, "touch_major": 8}}],
+    ["UPDATE", 1677239646.66215, {"0": {"id": 3678, "x": 483, "y": 1361, "pressure": 27, "orientation": 1, "touch_minor": 8, "touch_major": 8}}],
+    ["RELEASE", 1677239646.685691, {"1": {}}],
+    ["UPDATE", 1677239646.685691, {"1": {"id": 3679, "x": 675, "y": 1355, "pressure": 41, "orientation": 1, "touch_minor": 8, "touch_major": 8}}],
+    ["RELEASE", 1677239646.69694, {"0": {}}],
+    ["UPDATE", 1677239646.69694, {"0": {"id": 3678, "x": 483, "y": 1361, "pressure": 27, "orientation": 1, "touch_minor": 8, "touch_major": 8}}],
 ]
 
 LEFT = 1
@@ -428,49 +260,90 @@ def grab():
         retries -= 1
         time.sleep(0.2)
 
-def to_usec(sec, usec):
-    return sec * 1000000 + usec
+def to_sec(sec, usec):
+    return sec + usec / 1000000
 
-def record():
-    print("Recording...", file=sys.stderr)
-    first_sec = -1
-    first_usec = -1
-    while True:
-        ev = os.read(in_file, EVENT_SIZE)
-        (tv_sec, tv_usec, evtype, code, value) = struct.unpack(FORMAT, ev)
-        if first_sec < 0:
-            first_sec = tv_sec
-            first_usec = tv_usec
-        if tv_usec < first_usec:
-            tv_usec += 1000000
-            tv_sec -= 1
-        sys.stdout.write(json.dumps(
-            (tv_sec - first_sec, tv_usec - first_usec, evtype, code, value)))
-        sys.stdout.write('\n')
-        sys.stdout.flush()
+
+
 
 def replay(source):
+    """
+    Replay events from source (one json per line or list of 'records')
+    Record is a triplet:
+     - record type
+     - timestamp (fractional sec)
+     - dict with infos depending on type
+    Type is 'UPDATE' or 'RELEASE'
+    Update dict:
+     - slot_id: {id/x/y/pressure/orientation/touch_minor/touch_major}
+    Release dict:
+     - slot_id: {}
+    """
     if DRY_RUN:
         return
+
+    def wev(sec, usec, t, c, v):
+        os.write(in_file, struct.pack(FORMAT, sec, usec, t, c, v))
+
+    def finger(sec, usec, diff):
+        if 'id' in diff:
+            wev(sec, usec, 3, ABS_MT_TRACKING_ID, diff['id'])
+        if 'x' in diff:
+            wev(sec, usec, 3, ABS_MT_POSITION_X, diff['x'])
+        if 'y' in diff:
+            wev(sec, usec, 3, ABS_MT_POSITION_Y, diff['y'])
+        if 'pressure' in diff:
+            wev(sec, usec, 3, ABS_MT_PRESSURE, diff['pressure'])
+        if 'orientation' in diff:
+            wev(sec, usec, 3, ABS_MT_ORIENTATION, diff['orientation'])
+        if 'touch_minor' in diff:
+            wev(sec, usec, 3, ABS_MT_TOUCH_MINOR, diff['touch_minor'])
+        if 'touch_major' in diff:
+            wev(sec, usec, 3, ABS_MT_TOUCH_MAJOR, diff['touch_major'])
+
     tstart = time.time()
-    for item in source:
-        if isinstance(item, str):
-            (sec, usec, evtype, code, value) = json.loads(item)
-        else:
-            (sec, usec, evtype, code, value) = item
-        delay = sec + usec / 1000000 - time.time() + tstart
+    tfirst = -1
+    slot = 0
+
+    for record in source:
+        if isinstance(record, str):
+            record = json.loads(record)
+        (evtype, sec, detail) = record
+        if tfirst == -1:
+            tfirst = sec
+
+        delay = sec - tfirst + tstart - time.time()
         if delay > 0 and not NO_SLEEP:
             time.sleep(delay)
-        os.write(in_file, struct.pack(FORMAT, sec, usec, evtype, code, value))
+
+        tv_sec = int(sec)
+        tv_usec = int((sec - tv_sec) * 1000000)
+        last_slot = slot
+        if evtype == 'RELEASE':
+            if slot in detail:
+                wev(tv_sec, tv_usec, 3, ABS_MT_TRACKING_ID, -1)
+            for slot in detail.keys():
+                if slot == last_slot:
+                    continue
+                wev(tv_sec, tv_usec, 3, ABS_MT_SLOT, int(slot))
+                wev(tv_sec, tv_usec, 3, ABS_MT_TRACKING_ID, -1)
+            wev(tv_sec, tv_usec, 0, 0, 0)
+        elif evtype == 'UPDATE':
+            if slot in detail:
+                finger(tv_sec, tv_usec, detail[slot])
+            for slot in detail.keys():
+                if slot == last_slot:
+                    continue
+                wev(tv_sec, tv_usec, 3, ABS_MT_SLOT, int(slot))
+                finger(tv_sec, tv_usec, detail[slot])
+            wev(tv_sec, tv_usec, 0, 0, 0)
+        else:
+            print(f'invalid event type {evtype}', file=sys.stderr)
+            return
 
 
 if options.grab:
     grab()
-
-if options.record:
-    record()
-    # never returns, but just in case..
-    sys.exit(1)
 
 if options.replay:
     replay(sys.stdin)
@@ -494,12 +367,21 @@ if options.pidfile:
         pidfile.write("%d\n" % os.getpid())
 
 
-def point(finger, usec):
-    return dict(usec=usec,
-                x=finger.x,
-                y=finger.y,
-                pressure=finger.pressure,
-                orientation=finger.orientation)
+def point(finger, sec):
+    point = dict(sec=sec)
+    if finger.x != -1:
+        point['x'] = finger.x
+    if finger.y != -1:
+        point['y'] = finger.y
+    if finger.pressure != -1:
+        point['pressure'] = finger.pressure
+    if finger.orientation != -1:
+        point['orientation'] = finger.orientation
+    if finger.touch_minor != -1:
+        point['touch_minor'] = finger.touch_minor
+    if finger.touch_major != -1:
+        point['touch_major'] = finger.touch_major
+    return point
 
 
 class Finger():
@@ -507,10 +389,12 @@ class Finger():
     y = -1
     pressure = -1
     orientation = -1
+    touch_minor = -1
+    touch_major = -1
 
     def __init__(self, tracking_id, sec, usec):
         self.id = tracking_id
-        self.down_usec = to_usec(sec, usec)
+        self.down_sec = to_sec(sec, usec)
         self.trace = []
 
     def update(self, code, value):
@@ -522,20 +406,21 @@ class Finger():
             self.pressure = value
         elif code == ABS_MT_ORIENTATION:
             self.orientation = value
-        elif code in [ABS_MT_TOUCH_MAJOR, ABS_MT_TOUCH_MINOR]:
-            # large surface contact?
-            pass
+        elif code == ABS_MT_TOUCH_MINOR:
+            self.touch_minor = value
+        elif code == ABS_MT_TOUCH_MAJOR:
+            self.touch_major = value
         else:
             return False
         return True
 
-    def commit(self, usec):
-        self.trace.append(point(self, usec))
+    def commit(self, sec):
+        self.trace.append(point(self, sec))
 
     # return touch duration in msec
-    def release(self, sec, usec):
-        self.up_usec = to_usec(sec, usec)
-        self.down_time = (self.up_usec - self.down_usec) / 1000
+    def release(self, sec):
+        self.up_sec = sec
+        self.down_duration = (self.up_sec - self.down_sec)
 
 def which_side(finger):
     # only bottom half-ish
@@ -558,12 +443,12 @@ class Side():
 
     def __init__(self, finger):
         self.side = which_side(finger)
-        self.usec = finger.up_usec
+        self.usec = finger.up_sec
 
     def double_tap(self, finger):
         if self.side is None:
             return None
-        if finger.down_usec - self.usec > 500000:
+        if finger.down_sec - self.usec > 500000:
             return None
         if self.side != which_side(finger):
             return None
@@ -574,7 +459,7 @@ class Tracking():
     last_side = None
 
     def update(self, finger):
-        if finger.down_time < 300:
+        if finger.down_duration < 0.3:
             if self.last_side is not None:
                 action = self.last_side.double_tap(finger)
                 if action:
@@ -594,13 +479,16 @@ class State():
     finger = None
     last_side = None
     actions = []
+    # batch per sync event
     updated = {}
+    released = {}
 
     def update(self, tv_sec, tv_usec, code, value):
         if code == ABS_MT_SLOT:
             self.slot_id = value
             self.finger = self.fingers.get(value)
-            self.updated[value] = self.finger
+            if self.finger:
+                self.updated[value] = self.finger
             return
         if code == ABS_MT_TRACKING_ID and value >= 0:
             self.finger = Finger(value, tv_sec, tv_usec)
@@ -608,31 +496,62 @@ class State():
             self.updated[self.slot_id] = self.finger
             return
 
+        if code == 0:
+            sec = to_sec(tv_sec, tv_usec)
+            if RECORD:
+                if self.released:
+                    print(json.dumps(["RELEASE",
+                                      sec,
+                                      {slot_id: {} for slot_id in self.released.keys()}]))
+                recorded = {}
+                for slot, finger in self.updated.items():
+                    diff = {}
+                    prev = finger.trace[-1] if finger.trace else {}
+                    if not prev:
+                        diff['id'] = finger.id
+                    if finger.x != prev.get('x', -1):
+                        diff['x'] = finger.x
+                    if finger.y != prev.get('y', -1):
+                        diff['y'] = finger.y
+                    if finger.pressure != prev.get('pressure', -1):
+                        diff['pressure'] = finger.pressure
+                    if finger.orientation != prev.get('orientation', -1):
+                        diff['orientation'] = finger.orientation
+                    if finger.touch_minor != prev.get('touch_minor', -1):
+                        diff['touch_minor'] = finger.touch_minor
+                    if finger.touch_major != prev.get('touch_major', -1):
+                        diff['touch_major'] = finger.touch_major
+                    recorded[slot]=diff
+                if recorded:
+                    print(json.dumps(["UPDATE", sec, recorded]))
+            else:
+                for (slot_id, finger) in self.released.items():
+                    finger.release(sec)
+                    if DEBUG == 2:
+                        print(f"{tv_sec}.{tv_usec:06}: {finger.id} up {finger.x},{finger.y} after {finger.down_duration}. Pressure {finger.pressure} Orientation {finger.orientation}",
+                              file=sys.stderr)
+                    # trigger events on release for now
+                    tracking.update(finger)
+                for finger in self.updated.values():
+                    finger.commit(sec)
+                    if DEBUG == 2:
+                        print(f"{tv_sec}.{tv_usec:06}: {finger.id} pressed {finger.x},{finger.y}. Pressure {finger.pressure} Orientation {finger.orientation}",
+                              file=sys.stderr)
+            self.released = {}
+            self.updated = {}
+            return
+
         if self.finger is None:
-            if code != 0:
-                print(f"{tv_sec}.{tv_usec:06}: Unhandled touch event without id code {code}, value {value}",
-                      file=sys.stderr)
+            print(f"{tv_sec}.{tv_usec:06}: Unhandled touch event without id code {code}, value {value}",
+                  file=sys.stderr)
             return
 
         if self.finger.update(code, value):
             self.updated[self.slot_id] = self.finger
         elif code == ABS_MT_TRACKING_ID:
-            # value < 0
-            down_time = self.finger.release(tv_sec, tv_usec)
-            if DEBUG == 2:
-                print(f"{tv_sec}.{tv_usec:06}: {self.finger.id} up {self.finger.x},{self.finger.y} after {down_time}. Pressure {self.finger.pressure} Orientation {self.finger.orientation}",
-                      file=sys.stderr)
-            action = tracking.update(self.finger)
+            self.released[self.slot_id] = self.finger
             self.finger = None
             del self.fingers[self.slot_id]
-        elif code == 0:
-            if DEBUG == 2:
-                print(f"{tv_sec}.{tv_usec:06}: {self.finger.id} pressed {self.finger.x},{self.finger.y}. Pressure {self.finger.pressure} Orientation {self.finger.orientation}",
-                      file=sys.stderr)
-            usec = to_usec(tv_sec, tv_usec)
-            for finger in self.updated.values():
-                finger.commit(usec)
-            self.updated = {}
         else:
             if DEBUG == 1:
                 print(f"{tv_sec}.{tv_usec:06}: Unhandled touch event code {code}, value {value}",
@@ -640,18 +559,6 @@ class State():
 
 tracking = Tracking()
 state = State()
-
-# input codes for multitouch
-ABS_MT_SLOT = 47
-ABS_MT_TOUCH_MAJOR = 48
-ABS_MT_TOUCH_MINOR = 49
-ABS_MT_ORIENTATION = 52
-ABS_MT_POSITION_X = 53
-ABS_MT_POSITION_Y = 54
-ABS_MT_TRACKING_ID = 57
-ABS_MT_PRESSURE = 58
-
-
 
 def parse(tv_sec, tv_usec, evtype, code, value):
     if DEBUG == 3:

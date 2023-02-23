@@ -20,6 +20,8 @@ systemctl daemon-reload && systemctl enable --now shortcuts
 ## TODO
 
 - record/replay points instead of raw events (makes it more compact and easier to handle even if less precise, intermediate states between SYN (0) do not matter)
+ * Done, make something to generate perfect trajectories next
+ * Pretty sure replay isn't correct for multislot
 - make actions configurable?
  * keep action separate is a huge plus, having it smaller (see previous point) would help but not hard requirement
  * feature detection:
