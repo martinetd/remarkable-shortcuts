@@ -621,7 +621,7 @@ def parse(tv_sec, tv_usec, evtype, code, value):
     state.update(tv_sec, tv_usec, code, value)
 
 
-while True:
+def handle_input():
     timeout = None
     if state.actions:
         timeout = 0.05
@@ -630,7 +630,11 @@ while True:
         event = os.read(in_file, EVENT_SIZE)
         parse(*struct.unpack(FORMAT, event))
     elif state.actions:
-        action = replay(state.actions.pop(0))
+        replay(state.actions.pop(0))
+
+
+while True:
+    handle_input()
 
 # unreachable...
 os.close(in_file)
