@@ -5,13 +5,14 @@
 stream events from input device, without depending on evdev
 """
 from __future__ import print_function
+import errno
+import fcntl
+import json
+import os
+import select
 import struct
 import sys
-import os
 import time
-import json
-import fcntl
-import errno
 
 from optparse import OptionParser
 
@@ -444,9 +445,6 @@ def record():
 def replay(source):
     if DRY_RUN:
         return
-    # XXX output is mangled and does not work if we write immediately
-    # figure why sleep helps
-    time.sleep(0.05)
     tstart = time.time()
     for item in source:
         if isinstance(item, str):
@@ -540,6 +538,7 @@ class State():
     slot_id = 0
     finger = None
     last_side = None
+    actions = []
 
     def update(self, tv_sec, tv_usec, code, value):
         if code == ABS_MT_SLOT:
@@ -574,7 +573,7 @@ class State():
                     if action:
                         if DEBUG >= 1:
                             print(f"Running {action['name']}")
-                        replay(action['action'])
+                        self.actions.append(action['action'])
                         self.last_side = None
                     else:
                         self.last_side = Side(self.finger)
@@ -622,8 +621,15 @@ def parse(tv_sec, tv_usec, evtype, code, value):
 
 
 while True:
-    event = os.read(in_file, EVENT_SIZE)
-    parse(*struct.unpack(FORMAT, event))
+    timeout = None
+    if state.actions:
+        timeout = 0.05
+    (ready, _, _) = select.select([in_file], [], [], timeout)
+    if in_file in ready:
+        event = os.read(in_file, EVENT_SIZE)
+        parse(*struct.unpack(FORMAT, event))
+    elif state.actions:
+        action = replay(state.actions.pop(0))
 
 # unreachable...
 os.close(in_file)
