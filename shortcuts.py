@@ -457,10 +457,11 @@ class Side():
 
 class Tracking():
     last_side = None
+    last_ts = -1
 
     def update(self, finger):
         if finger.down_duration < 0.3:
-            if self.last_side is not None:
+            if self.last_side is not None and finger.up_sec - self.last_ts < 3:
                 action = self.last_side.double_tap(finger)
                 if action:
                     if DEBUG >= 1:
@@ -469,8 +470,10 @@ class Tracking():
                     self.last_side = None
                 else:
                     self.last_side = Side(finger)
+                    self.last_ts = finger.up_sec
             else:
                 self.last_side = Side(finger)
+                self.last_ts = finger.up_sec
 
 
 class State():

@@ -19,5 +19,6 @@ run tests/monkey-touch.record || error "monkey-touch crashed"
 run tests/double-tap-left.record -v | grep -q left || error "left didn't act on left"
 run tests/double-tap-right.record -v | grep -q right || error "right didn't act on right"
 run tests/double-tap-top.record -v | grep -q top || error "top didn't act on top"
+run tests/double-tap-slow-top-no-event.record -v | grep -q top && error "shouldn't trigger top on slow taps"
 
 [ "$FAILED" = 0 ]
