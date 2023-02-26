@@ -508,19 +508,19 @@ class State():
                     recorded[slot]=diff
                 if recorded:
                     print(json.dumps(["UPDATE", sec, recorded]))
-            else:
-                for (slot_id, finger) in self.released.items():
-                    finger.release(sec)
-                    if DEBUG == 2:
-                        print(f"{tv_sec}.{tv_usec:06}: {finger.id} up {finger.x},{finger.y} after {finger.down_duration}. Pressure {finger.pressure} Orientation {finger.orientation}",
-                              file=sys.stderr)
-                    # trigger events on release for now
+            for (slot_id, finger) in self.released.items():
+                finger.release(sec)
+                if DEBUG == 2:
+                    print(f"{tv_sec}.{tv_usec:06}: {finger.id} up {finger.x},{finger.y} after {finger.down_duration}. Pressure {finger.pressure} Orientation {finger.orientation}",
+                          file=sys.stderr)
+                # trigger events on release for now
+                if not RECORD:
                     tracking.update(finger)
-                for finger in self.updated.values():
-                    finger.commit(sec)
-                    if DEBUG == 2:
-                        print(f"{tv_sec}.{tv_usec:06}: {finger.id} pressed {finger.x},{finger.y}. Pressure {finger.pressure} Orientation {finger.orientation}",
-                              file=sys.stderr)
+            for finger in self.updated.values():
+                finger.commit(sec)
+                if DEBUG == 2:
+                    print(f"{tv_sec}.{tv_usec:06}: {finger.id} pressed {finger.x},{finger.y}. Pressure {finger.pressure} Orientation {finger.orientation}",
+                          file=sys.stderr)
             self.released = {}
             self.updated = {}
             return
