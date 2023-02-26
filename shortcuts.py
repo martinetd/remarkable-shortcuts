@@ -87,141 +87,6 @@ DRY_RUN = options.dry_run
 NO_SLEEP = options.no_sleep
 RECORD = options.record
 
-# record + sed -e '1i[' -e '$a]' -e 's/$/,/' -e 's/^/    /'
-# long lines slow down ALE too much...
-EMUL_PREV = [
-    ["UPDATE", 1677409911.819618, {"0": {"id": 4163, "x": 376, "y": 681, "pressure": 65}}],
-    ["UPDATE", 1677409911.837785, {"0": {"x": 381, "pressure": 66, "orientation": 2, "touch_minor": 17}}],
-    ["UPDATE", 1677409911.849842, {"0": {"x": 387, "pressure": 68}}],
-    ["UPDATE", 1677409911.861585, {"0": {"x": 394, "y": 682, "orientation": 1, "touch_minor": 8}}],
-    ["UPDATE", 1677409911.873545, {"0": {"x": 405, "y": 683, "pressure": 67, "orientation": 2, "touch_minor": 17}}],
-    ["UPDATE", 1677409911.885474, {"0": {"x": 418, "pressure": 68}}],
-    ["UPDATE", 1677409911.897283, {"0": {"x": 434, "y": 684}}],
-    ["UPDATE", 1677409911.909113, {"0": {"x": 451}}],
-    ["UPDATE", 1677409911.920781, {"0": {"x": 472}}],
-    ["UPDATE", 1677409911.932689, {"0": {"x": 494}}],
-    ["UPDATE", 1677409911.944771, {"0": {"x": 518, "pressure": 65}}],
-    ["UPDATE", 1677409911.956673, {"0": {"x": 543, "pressure": 66, "orientation": 1, "touch_minor": 8}}],
-    ["UPDATE", 1677409911.968514, {"0": {"x": 570, "y": 683, "pressure": 63, "orientation": 2, "touch_minor": 17}}],
-    ["UPDATE", 1677409911.980156, {"0": {"x": 597, "pressure": 66, "orientation": 1, "touch_minor": 8}}],
-    ["UPDATE", 1677409911.992123, {"0": {"x": 623, "pressure": 63, "orientation": 2, "touch_minor": 17}}],
-    ["UPDATE", 1677409912.004157, {"0": {"x": 650, "pressure": 66, "orientation": 1, "touch_minor": 8}}],
-    ["UPDATE", 1677409912.015997, {"0": {"x": 676, "pressure": 65, "orientation": 2, "touch_minor": 17}}],
-    ["UPDATE", 1677409912.027751, {"0": {"x": 701, "pressure": 68, "orientation": 1, "touch_minor": 8}}],
-    ["UPDATE", 1677409912.039872, {"0": {"x": 724, "y": 685, "orientation": 2, "touch_minor": 17}}],
-    ["UPDATE", 1677409912.051323, {"0": {"x": 745, "y": 686}}],
-    ["UPDATE", 1677409912.063419, {"0": {"x": 766, "y": 687, "pressure": 69, "orientation": 1, "touch_minor": 8}}],
-    ["UPDATE", 1677409912.075354, {"0": {"x": 785, "y": 688, "orientation": 3, "touch_minor": 17, "touch_major": 17}}],
-    ["UPDATE", 1677409912.087194, {"0": {"x": 803, "y": 689, "pressure": 67, "orientation": 2, "touch_major": 8}}],
-    ["UPDATE", 1677409912.098912, {"0": {"x": 819, "pressure": 69, "orientation": 1, "touch_minor": 8}}],
-    ["UPDATE", 1677409912.110909, {"0": {"x": 836, "pressure": 68}}],
-    ["UPDATE", 1677409912.122926, {"0": {"x": 852, "pressure": 65, "orientation": 2, "touch_minor": 17}}],
-    ["UPDATE", 1677409912.13467, {"0": {"x": 866, "pressure": 67}}],
-    ["UPDATE", 1677409912.14642, {"0": {"x": 881, "orientation": 1, "touch_minor": 8}}],
-    ["UPDATE", 1677409912.158387, {"0": {"x": 896, "y": 688, "pressure": 66, "orientation": 2, "touch_minor": 17}}],
-    ["UPDATE", 1677409912.170146, {"0": {"x": 909, "y": 687, "pressure": 63}}],
-    ["UPDATE", 1677409912.182156, {"0": {"x": 920, "y": 686}}],
-    ["UPDATE", 1677409912.193937, {"0": {"x": 929, "y": 685, "pressure": 62}}],
-    ["UPDATE", 1677409912.205868, {"0": {"x": 937, "y": 684, "pressure": 65}}],
-    ["UPDATE", 1677409912.217682, {"0": {"x": 944}}],
-    ["UPDATE", 1677409912.229519, {"0": {"x": 951, "orientation": 1, "touch_minor": 8}}],
-    ["UPDATE", 1677409912.241419, {"0": {"x": 960, "pressure": 64}}],
-    ["UPDATE", 1677409912.253326, {"0": {"x": 969, "pressure": 60, "orientation": 2, "touch_minor": 17}}],
-    ["UPDATE", 1677409912.264746, {"0": {"x": 978, "pressure": 47}}],
-    ["RELEASE", 1677409912.300545, {"0": {}}],
-]
-
-EMUL_NEXT = [
-    ["UPDATE", 1677409903.224997, {"0": {"id": 4162, "x": 983, "y": 711, "pressure": 70}}],
-    ["UPDATE", 1677409903.242273, {"0": {"x": 979}}],
-    ["UPDATE", 1677409903.251933, {"0": {"x": 975, "pressure": 69, "orientation": 3, "touch_minor": 17}}],
-    ["UPDATE", 1677409903.263995, {"0": {"x": 970, "orientation": 4}}],
-    ["UPDATE", 1677409903.276106, {"0": {"x": 962, "pressure": 71, "orientation": 2, "touch_minor": 8}}],
-    ["UPDATE", 1677409903.28781, {"0": {"x": 952, "y": 712}}],
-    ["UPDATE", 1677409903.299889, {"0": {"x": 940, "pressure": 69, "orientation": 4, "touch_minor": 17}}],
-    ["UPDATE", 1677409903.311293, {"0": {"x": 925, "y": 714, "pressure": 72, "orientation": 2, "touch_minor": 8}}],
-    ["UPDATE", 1677409903.323343, {"0": {"x": 906, "y": 715, "pressure": 69, "touch_minor": 17, "touch_major": 8}}],
-    ["UPDATE", 1677409903.335187, {"0": {"x": 885, "y": 716, "orientation": 1, "touch_minor": 8}}],
-    ["UPDATE", 1677409903.347141, {"0": {"x": 861, "y": 717, "pressure": 65, "orientation": 2, "touch_minor": 17}}],
-    ["UPDATE", 1677409903.359011, {"0": {"x": 834, "y": 718, "pressure": 69}}],
-    ["UPDATE", 1677409903.370587, {"0": {"x": 806, "y": 719, "pressure": 72, "orientation": 1, "touch_minor": 8}}],
-    ["UPDATE", 1677409903.382607, {"0": {"x": 773, "pressure": 71, "orientation": 2, "touch_minor": 17}}],
-    ["UPDATE", 1677409903.394664, {"0": {"x": 739, "y": 720, "pressure": 69}}],
-    ["UPDATE", 1677409903.406199, {"0": {"x": 706, "y": 721, "pressure": 73, "orientation": 1, "touch_minor": 8}}],
-    ["UPDATE", 1677409903.418435, {"0": {"x": 679, "pressure": 71, "orientation": 2, "touch_minor": 17}}],
-    ["UPDATE", 1677409903.429947, {"0": {"x": 646, "y": 722}}],
-    ["UPDATE", 1677409903.442041, {"0": {"x": 618, "y": 723, "pressure": 73}}],
-    ["UPDATE", 1677409903.453851, {"0": {"x": 586, "pressure": 71}}],
-    ["UPDATE", 1677409903.465755, {"0": {"x": 559, "pressure": 74, "orientation": 1, "touch_minor": 8}}],
-    ["UPDATE", 1677409903.477416, {"0": {"x": 531, "pressure": 72, "orientation": 2, "touch_minor": 17}}],
-    ["UPDATE", 1677409903.48958, {"0": {"x": 505, "touch_minor": 8, "touch_major": 17}}],
-    ["UPDATE", 1677409903.50141, {"0": {"x": 481, "pressure": 73, "touch_minor": 17, "touch_major": 8}}],
-    ["UPDATE", 1677409903.513212, {"0": {"x": 459, "y": 722, "pressure": 72, "orientation": 3, "touch_major": 17}}],
-    ["UPDATE", 1677409903.525244, {"0": {"x": 440, "y": 721, "pressure": 74}}],
-    ["UPDATE", 1677409903.536996, {"0": {"x": 422, "y": 720, "orientation": 2, "touch_minor": 8}}],
-    ["UPDATE", 1677409903.548895, {"0": {"x": 406, "pressure": 75, "orientation": 3, "touch_minor": 17}}],
-    ["UPDATE", 1677409903.560983, {"0": {"x": 393, "y": 719, "pressure": 73}}],
-    ["UPDATE", 1677409903.572516, {"0": {"x": 382, "pressure": 72}}],
-    ["UPDATE", 1677409903.584474, {"0": {"x": 372}}],
-    ["UPDATE", 1677409903.596273, {"0": {"x": 364, "y": 718, "pressure": 73}}],
-    ["UPDATE", 1677409903.608237, {"0": {"x": 357, "pressure": 71}}],
-    ["UPDATE", 1677409903.62013, {"0": {"x": 352, "pressure": 70}}],
-    ["UPDATE", 1677409903.631989, {"0": {"x": 347, "pressure": 68, "orientation": 2, "touch_minor": 8}}],
-    ["UPDATE", 1677409903.643834, {"0": {"x": 342, "pressure": 61, "orientation": 1, "touch_major": 8}}],
-    ["UPDATE", 1677409903.655656, {"0": {"x": 338, "pressure": 34}}],
-    ["RELEASE", 1677409903.691095, {"0": {}}],
-]
-
-EMUL_HOME = [
-    ["UPDATE", 1677409920.129119, {"0": {"id": 4164, "x": 723, "y": 1819, "pressure": 59, "touch_minor": 8, "touch_major": 17}}],
-    ["UPDATE", 1677409920.183101, {"0": {"y": 1815, "pressure": 75, "orientation": 1, "touch_major": 8}}],
-    ["UPDATE", 1677409920.195142, {"0": {"y": 1811, "pressure": 78}}],
-    ["UPDATE", 1677409920.20685, {"0": {"y": 1804, "pressure": 81, "orientation": 2, "touch_major": 17}}],
-    ["UPDATE", 1677409920.218978, {"0": {"y": 1798, "pressure": 85}}],
-    ["UPDATE", 1677409920.230574, {"0": {"y": 1789, "pressure": 86}}],
-    ["UPDATE", 1677409920.242537, {"0": {"y": 1778, "pressure": 82, "orientation": 3, "touch_minor": 17}}],
-    ["UPDATE", 1677409920.254558, {"0": {"y": 1766, "pressure": 86, "orientation": 2, "touch_minor": 8}}],
-    ["UPDATE", 1677409920.2663, {"0": {"x": 722, "y": 1750, "pressure": 83, "orientation": 3, "touch_minor": 17}}],
-    ["UPDATE", 1677409920.278071, {"0": {"y": 1733, "pressure": 82, "orientation": 2, "touch_minor": 8}}],
-    ["UPDATE", 1677409920.29015, {"0": {"y": 1713, "pressure": 81, "touch_minor": 17, "touch_major": 8}}],
-    ["UPDATE", 1677409920.302009, {"0": {"y": 1691, "pressure": 84, "touch_minor": 8, "touch_major": 17}}],
-    ["UPDATE", 1677409920.313853, {"0": {"y": 1667, "pressure": 79, "orientation": 1, "touch_major": 8}}],
-    ["UPDATE", 1677409920.325652, {"0": {"y": 1641, "pressure": 82, "orientation": 2, "touch_major": 17}}],
-    ["UPDATE", 1677409920.337564, {"0": {"y": 1613, "pressure": 79}}],
-    ["UPDATE", 1677409920.349259, {"0": {"y": 1582, "pressure": 78, "touch_minor": 17, "touch_major": 8}}],
-    ["UPDATE", 1677409920.361308, {"0": {"y": 1554, "pressure": 81, "touch_minor": 8, "touch_major": 17}}],
-    ["UPDATE", 1677409920.373417, {"0": {"x": 721, "y": 1520, "pressure": 74, "touch_minor": 17, "touch_major": 8}}],
-    ["UPDATE", 1677409920.384894, {"0": {"x": 719, "y": 1493, "pressure": 77, "orientation": 3, "touch_major": 17}}],
-    ["UPDATE", 1677409920.396938, {"0": {"x": 716, "y": 1460, "pressure": 75}}],
-    ["UPDATE", 1677409920.408622, {"0": {"x": 714, "y": 1433, "pressure": 73, "orientation": 2, "touch_major": 8}}],
-    ["UPDATE", 1677409920.42083, {"0": {"x": 711, "y": 1406, "pressure": 71, "orientation": 4, "touch_major": 17}}],
-    ["UPDATE", 1677409920.432711, {"0": {"x": 708, "y": 1382, "pressure": 75}}],
-    ["UPDATE", 1677409920.444453, {"0": {"x": 706, "y": 1359, "pressure": 72, "orientation": 2, "touch_major": 8}}],
-    ["UPDATE", 1677409920.456292, {"0": {"x": 705, "y": 1338, "pressure": 76, "orientation": 3, "touch_major": 17}}],
-    ["UPDATE", 1677409920.468007, {"0": {"x": 703, "y": 1320, "pressure": 78, "orientation": 4}}],
-    ["UPDATE", 1677409920.480112, {"0": {"x": 702, "y": 1304, "orientation": 3}}],
-    ["UPDATE", 1677409920.491885, {"0": {"x": 701, "y": 1290, "pressure": 76, "orientation": 2, "touch_major": 8}}],
-    ["UPDATE", 1677409920.503725, {"0": {"y": 1277, "pressure": 75}}],
-    ["UPDATE", 1677409920.515752, {"0": {"x": 700, "y": 1264, "pressure": 77, "orientation": 3, "touch_major": 17}}],
-    ["UPDATE", 1677409920.527558, {"0": {"y": 1253, "pressure": 80, "orientation": 4}}],
-    ["UPDATE", 1677409920.539394, {"0": {"y": 1244, "pressure": 78}}],
-    ["UPDATE", 1677409920.551226, {"0": {"x": 699, "y": 1235, "pressure": 76, "orientation": 3}}],
-    ["UPDATE", 1677409920.562986, {"0": {"x": 697, "y": 1225, "pressure": 72, "orientation": 2, "touch_major": 8}}],
-    ["UPDATE", 1677409920.574881, {"0": {"x": 695, "y": 1216, "pressure": 70}}],
-    ["UPDATE", 1677409920.586609, {"0": {"x": 691, "y": 1207, "pressure": 59, "orientation": 1, "touch_minor": 8}}],
-    ["RELEASE", 1677409920.622096, {"0": {}}],
-]
-
-LEFT = 1
-RIGHT = 2
-TOP = 3
-
-ACTIONS = {
-    LEFT:  {'name': 'left',  'action': EMUL_PREV},
-    RIGHT: {'name': 'right', 'action': EMUL_NEXT},
-    TOP:   {'name': 'top',   'action': EMUL_HOME},
-}
-
 # open file in binary mode
 in_file = os.open(infile_path, os.O_RDWR)
 
@@ -244,7 +109,62 @@ def grab():
 def to_sec(sec, usec):
     return sec + usec / 1000000
 
+def frange(start, stop, step):
+    """
+    inclusive range() for float
+    """
+    while start <= stop:
+        yield start
+        start += step
 
+def gen_event(descr):
+    """
+    Generate event for replay.
+    descr must be an array of dicts with:
+     - type, one string of 'line'
+     - down_time, start ts, optional default to 0 or end of previous touch
+     - pressure, optional default to 70
+     - id, default to 1 or previous touch + 1
+     - (XXX add a way to speciify orientation/touch_minor/major if useful)
+    for 'line:
+     - start: (x,y) tuple
+     - end: (x,y) tuple
+     - duration: time to go from start to end
+     - interval: time between each points, optonal default to 0.02
+    Current version only support sequential items in array e.g. on multitouch
+    """
+    def gen():
+        time = 0
+        id = 0
+        for touch in descr:
+            if touch.get('type') != 'line':
+                raise Exception(f"bad type {touch.get('type', 'unset')}")
+            (sx, sy) = touch['start']
+            (ex, ey) = touch['end']
+            duration = touch['duration']
+            interval = touch.get('interval', 0.02)
+            time += touch.get('down_time', 0)
+            pressure = touch.get('pressure', 70)
+            id = touch.get('id', id+1)
+            x = y = -1
+            for t in frange(0, duration, interval):
+                ev = {}
+                if t == 0:
+                    ev['id'] = id
+                    ev['pressure'] = pressure
+                nx = int(sx + (ex - sx) * t / duration)
+                if x != nx:
+                    x = nx
+                    ev['x'] = x
+                ny = int(sy + (ey - sy) * t / duration)
+                if y != ny:
+                    y = ny
+                    ev['y'] = y
+                yield ["UPDATE", time + t, {"0": ev}]
+            time += duration
+            yield ["RELEASE", time, {"0": {}}]
+
+    return gen
 
 
 def replay(source):
@@ -406,14 +326,14 @@ class Finger():
 def which_side(finger):
     # only bottom half-ish
     if finger.y > 1200:
-        return TOP
+        return Side.TOP
     if finger.y > 1000:
         return None
     if finger.x < 500:
-        return LEFT
+        return Side.LEFT
     if finger.x > 700:
         # some blank in the middle too
-        return RIGHT
+        return Side.RIGHT
     return None
 
 
@@ -447,7 +367,7 @@ class Tracking():
                 if action:
                     if DEBUG >= 1:
                         print(f"Running {action['name']}")
-                    state.actions.append(action['action'])
+                    state.actions.append(action['action']())
                     self.last_side = None
                 else:
                     self.last_side = Side(finger)
@@ -540,6 +460,25 @@ class State():
             if DEBUG == 1:
                 print(f"{tv_sec}.{tv_usec:06}: Unhandled touch event code {code}, value {value}",
                       file=sys.stderr)
+
+
+ACTIONS = {
+    Side.LEFT:  {'name': 'left',  'action': gen_event(
+        [dict(type='line',
+              start=(300, 700),
+              end=(1000, 700),
+              duration=0.5)])},
+    Side.RIGHT: {'name': 'right',  'action': gen_event(
+        [dict(type='line',
+              start=(1000, 700),
+              end=(300, 700),
+              duration=0.5)])},
+    Side.TOP:   {'name': 'top',  'action': gen_event(
+        [dict(type='line',
+              start=(700, 1819),
+              end=(700, 1200),
+              duration=0.5)])},
+}
 
 tracking = Tracking()
 state = State()
