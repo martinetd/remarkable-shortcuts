@@ -180,11 +180,13 @@ def replay(source):
     Release dict:
      - slot_id: {}
     """
-    if DRY_RUN:
-        return
 
     def wev(sec, usec, t, c, v):
-        os.write(in_file, struct.pack(FORMAT, sec, usec, t, c, v))
+        if DEBUG == 3:
+            print(f"{sec}.{usec:06}: Replay type {t} code {c}, value {v}",
+                  file=sys.stderr)
+        if not DRY_RUN:
+            os.write(in_file, struct.pack(FORMAT, sec, usec, t, c, v))
 
     def finger(sec, usec, diff):
         if 'id' in diff:
@@ -212,6 +214,8 @@ def replay(source):
         (evtype, sec, detail) = record
         if tfirst == -1:
             tfirst = sec
+        if DEBUG == 2:
+            print(f"Replay {record}", file=sys.stderr)
 
         delay = sec - tfirst + tstart - time.time()
         if delay > 0 and not NO_SLEEP:
