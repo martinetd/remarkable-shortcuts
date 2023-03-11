@@ -294,6 +294,9 @@ class Finger():
     orientation = -1
     touch_minor = -1
     touch_major = -1
+    # valid after release
+    up_sec = -1
+    down_duration = -1
 
     def __init__(self, tracking_id, sec, usec):
         self.id = tracking_id
@@ -325,58 +328,65 @@ class Finger():
         self.up_sec = sec
         self.down_duration = (self.up_sec - self.down_sec)
 
-def which_side(finger):
-    # only bottom half-ish
-    if finger.y > 1200:
-        return Side.TOP
-    if finger.y > 1000:
+
+def detect_double_tap(tracking, feature):
+    if not tracking.prev:
         return None
-    if finger.x < 500:
-        return Side.LEFT
-    if finger.x > 700:
-        # some blank in the middle too
-        return Side.RIGHT
-    return None
+    prev = tracking.prev
+    cur = tracking.cur
 
+    # total time with prev and current touch < 1s
+    if cur.up_sec - prev.down_sec > 1:
+        return None
+    # prev and current touch < 0.5s
+    if prev.down_duration > 0.5 or cur.down_duration > 0.5:
+        return None
+    # prev and current touch area is small enough
+    # for simplicity we only consider the last position
+    if abs(prev.x - cur.x) > 50 or abs(prev.y - cur.y) > 50:
+        return None
 
-class Side():
-    LEFT = 0
-    RIGHT = 1
-    TOP = 2
+    # check for min/max edges... Only check last position again.
+    if cur.x < feature.get('x_min', 0):
+        return None
+    if cur.y < feature.get('y_min', 0):
+        return None
+    if cur.x > feature.get('x_max', 1500):
+        return None
+    if cur.y > feature.get('y_max', 1900):
+        return None
 
-    def __init__(self, finger):
-        self.side = which_side(finger)
-        self.usec = finger.up_sec
+    # okay!
+    return feature['action']()
 
-    def double_tap(self, finger):
-        if self.side is None:
-            return None
-        if finger.down_sec - self.usec > 500000:
-            return None
-        if self.side != which_side(finger):
-            return None
-        return ACTIONS[self.side]
-
+DETECT = {
+    'double_tap': detect_double_tap,
+}
 
 class Tracking():
-    last_side = None
-    last_ts = -1
+    prev = None
+    cur = None
 
     def update(self, finger):
-        if finger.down_duration < 0.3:
-            if self.last_side is not None and finger.up_sec - self.last_ts < 3:
-                action = self.last_side.double_tap(finger)
-                if action:
-                    if DEBUG >= 1:
-                        print(f"Running {action['name']}")
-                    state.actions.append(action['action']())
-                    self.last_side = None
-                else:
-                    self.last_side = Side(finger)
-                    self.last_ts = finger.up_sec
-            else:
-                self.last_side = Side(finger)
-                self.last_ts = finger.up_sec
+        self.cur = finger
+        i = 0
+        while i < len(FEATURES):
+            feature = FEATURES[i]
+            detect = DETECT.get(feature['type'])
+            if not detect:
+                print(f"Invalid feature type {feature['type']}, skipping",
+                      file=sys.stderr)
+                FEATURES.pop(i)
+                continue
+            action = detect(self, feature)
+            if action:
+                if DEBUG >= 1:
+                    print(f"Detected {feature.get('name')}")
+                return action
+            i += 1
+
+        self.prev = finger
+        return None
 
 
 class State():
@@ -437,7 +447,9 @@ class State():
                           file=sys.stderr)
                 # trigger events on release for now
                 if not RECORD:
-                    tracking.update(finger)
+                    action = tracking.update(finger)
+                    if action:
+                        state.actions.append(action)
             for finger in self.updated.values():
                 finger.commit(sec)
                 if DEBUG == 2:
@@ -465,33 +477,55 @@ class State():
 
 
 ACTIONS = {
-    Side.LEFT:  {'name': 'left',  'action': gen_event(
+    'swipe_to_right':  gen_event(
         [dict(type='line',
               start=(300, 700),
               end=(1000, 700),
-              duration=0.5)])},
-    Side.RIGHT: {'name': 'right',  'action': gen_event(
+              duration=0.5)]),
+    'swipe_to_left': gen_event(
         [dict(type='line',
               start=(1000, 700),
               end=(300, 700),
-              duration=0.5)])},
-    Side.TOP:   {'name': 'top',  'action': gen_event(
+              duration=0.5)]),
+    'swipe_down_from_top':  gen_event(
         [dict(type='line',
               start=(700, 1819),
               end=(700, 1200),
-              duration=0.5)])},
+              duration=0.5)]),
 }
+FEATURES = [
+    {
+        'name': 'left double-tap',
+        'type': 'double_tap',
+        'x_max': 500,
+        'y_max': 1000,
+        'action': ACTIONS['swipe_to_right'],
+    },
+    {
+        'name': 'right double-tap',
+        'type': 'double_tap',
+        'x_min': 700,
+        'y_max': 1000,
+        'action': ACTIONS['swipe_to_left'],
+    },
+    {
+        'name': 'top double-tap',
+        'type': 'double_tap',
+        'y_min': 1200,
+        'action': ACTIONS['swipe_down_from_top'],
+    },
+]
 
 if options.replay:
     replay(sys.stdin)
     sys.exit(0)
 
 if options.replay_action:
-    action = [x for x in ACTIONS.values() if x['name'] == options.replay_action]
-    if not action:
-        print(f"action {options.replay_action} not found", file=sys.stderr)
+    if options.replay_action not in ACTIONS:
+        print(f"action {options.replay_action} not found",
+              file=sys.stderr)
         sys.exit(1)
-    replay(action[0]['action']())
+    replay(ACTIONS[options.replay_action]())
     sys.exit(0)
 
 tracking = Tracking()
