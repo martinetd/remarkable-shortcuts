@@ -119,6 +119,34 @@ def frange(start, stop, step):
         yield start
         start += step
 
+def gen_finger(touch, index):
+    if touch.get('type') != 'line':
+        raise Exception(f"bad type {touch.get('type', 'unset')}")
+    (sx, sy) = touch['start']
+    (ex, ey) = touch['end']
+    duration = touch['duration']
+    interval = touch.get('interval', 0.01)
+    start = touch.get('down_time', 0)
+    pressure = touch.get('pressure', 70)
+    touch_id = touch.get('id', index)
+    x = y = -1
+    for t in frange(start, start + duration, interval):
+        ev = {}
+        if t == start:
+            ev['id'] = touch_id
+            ev['pressure'] = pressure
+        nx = int(sx + (ex - sx) * t / duration)
+        if x != nx:
+            x = nx
+            ev['x'] = x
+        ny = int(sy + (ey - sy) * t / duration)
+        if y != ny:
+            y = ny
+            ev['y'] = y
+        yield ['UPDATE', t, {'0': ev}]
+    yield ['RELEASE', start + duration, {'0': {}}]
+
+
 def gen_event(descr):
     """
     Generate event for replay.
@@ -135,35 +163,40 @@ def gen_event(descr):
      - interval: time between each points, optonal default to 0.02
     Current version only support sequential items in array e.g. on multitouch
     """
-    time = 0
-    id = 0
-    for touch in descr:
-        if touch.get('type') != 'line':
-            raise Exception(f"bad type {touch.get('type', 'unset')}")
-        (sx, sy) = touch['start']
-        (ex, ey) = touch['end']
-        duration = touch['duration']
-        interval = touch.get('interval', 0.01)
-        time += touch.get('down_time', 0)
-        pressure = touch.get('pressure', 70)
-        id = touch.get('id', id+1)
-        x = y = -1
-        for t in frange(0, duration, interval):
-            ev = {}
-            if t == 0:
-                ev['id'] = id
-                ev['pressure'] = pressure
-            nx = int(sx + (ex - sx) * t / duration)
-            if x != nx:
-                x = nx
-                ev['x'] = x
-            ny = int(sy + (ey - sy) * t / duration)
-            if y != ny:
-                y = ny
-                ev['y'] = y
-            yield ["UPDATE", time + t, {"0": ev}]
-        time += duration
-        yield ["RELEASE", time, {"0": {}}]
+    fingers = [gen_finger(touch, index) for index, touch in enumerate(descr)]
+    fingers_next = [next(finger) for finger in fingers]
+    active = {}
+    while fingers:
+        ev_time = min(fingers_next, key=lambda event: event[1])[1]
+        upd = {}
+        rel = {}
+        i = 0
+        while i < len(fingers):
+            if fingers_next[i][1] != ev_time:
+                i += 1
+                continue
+            if fingers_next[i][0] == 'RELEASE':
+                rel[active[fingers[i]]] = fingers_next[i][2]['0']
+                del active[fingers[i]]
+            else:
+                if fingers[i] not in active:
+                    j = 0
+                    while j in active.values():
+                        j += 1
+                    active[fingers[i]] = j
+                upd[active[fingers[i]]] = fingers_next[i][2]['0']
+            try:
+                fingers_next[i] = next(fingers[i])
+            except StopIteration:
+                fingers.pop(i)
+                fingers_next.pop(i)
+                continue
+            i += 1
+        if upd:
+            yield ['UPDATE', ev_time, upd]
+        if rel:
+            yield ['RELEASE', ev_time, rel]
+
 
 
 def replay(source):
@@ -205,7 +238,7 @@ def replay(source):
 
     tstart = time.time()
     tfirst = -1
-    slot = 0
+    cur_slot = 0
 
     for record in source:
         if isinstance(record, str):
@@ -222,23 +255,25 @@ def replay(source):
 
         tv_sec = int(sec)
         tv_usec = int((sec - tv_sec) * 1000000)
-        last_slot = slot
+        last_slot = cur_slot
         if evtype == 'RELEASE':
-            if slot in detail:
+            if last_slot in detail:
                 wev(tv_sec, tv_usec, 3, ABS_MT_TRACKING_ID, -1)
             for slot in detail.keys():
                 if slot == last_slot:
                     continue
                 wev(tv_sec, tv_usec, 3, ABS_MT_SLOT, int(slot))
+                cur_slot = slot
                 wev(tv_sec, tv_usec, 3, ABS_MT_TRACKING_ID, -1)
             wev(tv_sec, tv_usec, 0, 0, 0)
         elif evtype == 'UPDATE':
-            if slot in detail:
-                finger(tv_sec, tv_usec, detail[slot])
+            if last_slot in detail:
+                finger(tv_sec, tv_usec, detail[last_slot])
             for slot in detail.keys():
                 if slot == last_slot:
                     continue
                 wev(tv_sec, tv_usec, 3, ABS_MT_SLOT, int(slot))
+                cur_slot = slot
                 finger(tv_sec, tv_usec, detail[slot])
             wev(tv_sec, tv_usec, 0, 0, 0)
         else:
@@ -491,6 +526,28 @@ ACTIONS = {
              start=(700, 1819),
              end=(700, 1200),
              duration=0.5),
+    ],
+    # for test
+    'double_swipe_down_from_top': [
+        dict(type='line',
+             start=(700, 1819),
+             end=(700, 1200),
+             duration=0.5),
+        dict(type='line',
+             start=(750, 1819),
+             end=(750, 1200),
+             duration=0.5),
+    ],
+    'double_tap_left': [
+        dict(type='line',
+             start=(300, 300),
+             end=(300, 300),
+             duration=0.2),
+        dict(type='line',
+             down_time=0.4,
+             start=(300, 300),
+             end=(300, 300),
+             duration=0.2),
     ],
 }
 

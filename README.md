@@ -20,7 +20,7 @@ systemctl daemon-reload && systemctl enable --now shortcuts
 ## TODO
 
 - [x] Improve recording (raw events -> more summarized tracing)
-  - [ ] Check/fix generation of multitouch
+  - [x] Check/fix generation of multitouch
   - [ ] Improve generation for more complex curves if required
 - [x] make actions configurable (currently hard-coded in .py file, but it's a pure dict = as good as done if someone ever needs to change it)
 - [ ] more feature detection
