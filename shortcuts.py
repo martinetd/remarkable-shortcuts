@@ -135,38 +135,35 @@ def gen_event(descr):
      - interval: time between each points, optonal default to 0.02
     Current version only support sequential items in array e.g. on multitouch
     """
-    def gen():
-        time = 0
-        id = 0
-        for touch in descr:
-            if touch.get('type') != 'line':
-                raise Exception(f"bad type {touch.get('type', 'unset')}")
-            (sx, sy) = touch['start']
-            (ex, ey) = touch['end']
-            duration = touch['duration']
-            interval = touch.get('interval', 0.01)
-            time += touch.get('down_time', 0)
-            pressure = touch.get('pressure', 70)
-            id = touch.get('id', id+1)
-            x = y = -1
-            for t in frange(0, duration, interval):
-                ev = {}
-                if t == 0:
-                    ev['id'] = id
-                    ev['pressure'] = pressure
-                nx = int(sx + (ex - sx) * t / duration)
-                if x != nx:
-                    x = nx
-                    ev['x'] = x
-                ny = int(sy + (ey - sy) * t / duration)
-                if y != ny:
-                    y = ny
-                    ev['y'] = y
-                yield ["UPDATE", time + t, {"0": ev}]
-            time += duration
-            yield ["RELEASE", time, {"0": {}}]
-
-    return gen
+    time = 0
+    id = 0
+    for touch in descr:
+        if touch.get('type') != 'line':
+            raise Exception(f"bad type {touch.get('type', 'unset')}")
+        (sx, sy) = touch['start']
+        (ex, ey) = touch['end']
+        duration = touch['duration']
+        interval = touch.get('interval', 0.01)
+        time += touch.get('down_time', 0)
+        pressure = touch.get('pressure', 70)
+        id = touch.get('id', id+1)
+        x = y = -1
+        for t in frange(0, duration, interval):
+            ev = {}
+            if t == 0:
+                ev['id'] = id
+                ev['pressure'] = pressure
+            nx = int(sx + (ex - sx) * t / duration)
+            if x != nx:
+                x = nx
+                ev['x'] = x
+            ny = int(sy + (ey - sy) * t / duration)
+            if y != ny:
+                y = ny
+                ev['y'] = y
+            yield ["UPDATE", time + t, {"0": ev}]
+        time += duration
+        yield ["RELEASE", time, {"0": {}}]
 
 
 def replay(source):
@@ -357,7 +354,7 @@ def detect_double_tap(tracking, feature):
         return None
 
     # okay!
-    return feature['action']()
+    return gen_event(feature['action'])
 
 DETECT = {
     'double_tap': detect_double_tap,
@@ -477,22 +474,26 @@ class State():
 
 
 ACTIONS = {
-    'swipe_to_right':  gen_event(
-        [dict(type='line',
-              start=(300, 700),
-              end=(1000, 700),
-              duration=0.5)]),
-    'swipe_to_left': gen_event(
-        [dict(type='line',
-              start=(1000, 700),
-              end=(300, 700),
-              duration=0.5)]),
-    'swipe_down_from_top':  gen_event(
-        [dict(type='line',
-              start=(700, 1819),
-              end=(700, 1200),
-              duration=0.5)]),
+    'swipe_to_right':  [
+        dict(type='line',
+             start=(300, 700),
+             end=(1000, 700),
+             duration=0.5),
+    ],
+    'swipe_to_left': [
+        dict(type='line',
+             start=(1000, 700),
+             end=(300, 700),
+             duration=0.5),
+    ],
+    'swipe_down_from_top': [
+        dict(type='line',
+             start=(700, 1819),
+             end=(700, 1200),
+             duration=0.5),
+    ],
 }
+
 FEATURES = [
     {
         'name': 'left double-tap',
@@ -525,7 +526,7 @@ if options.replay_action:
         print(f"action {options.replay_action} not found",
               file=sys.stderr)
         sys.exit(1)
-    replay(ACTIONS[options.replay_action]())
+    replay(gen_event(ACTIONS[options.replay_action]))
     sys.exit(0)
 
 tracking = Tracking()
