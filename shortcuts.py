@@ -190,7 +190,7 @@ def gen_event(descr):
                 continue
             i += 1
         if ev:
-            yield ['UPDATE', ev_time, ev]
+            yield [ev_time, ev]
 
 
 
@@ -198,14 +198,9 @@ def replay(source):
     """
     Replay events from source (one json per line or list of 'records')
     Record is a triplet:
-     - record type
      - timestamp (fractional sec)
-     - dict with infos depending on type
-    Type is 'UPDATE' or 'RELEASE'
-    Update dict:
-     - slot_id: {id/x/y/pressure/orientation/touch_minor/touch_major}
-    Release dict:
-     - slot_id: {}
+     - dict with {slot_id: {updated field[s]}}, where fields are
+        - id/x/y/pressure/orientation/touch_minor/touch_major
     """
 
     def wev(sec, usec, t, c, v):
@@ -238,7 +233,7 @@ def replay(source):
     for record in source:
         if isinstance(record, str):
             record = json.loads(record)
-        (evtype, sec, detail) = record
+        (sec, detail) = record
         if tfirst == -1:
             tfirst = sec
         if DEBUG == 2:
@@ -251,29 +246,15 @@ def replay(source):
         tv_sec = int(sec)
         tv_usec = int((sec - tv_sec) * 1000000)
         last_slot = cur_slot
-        if evtype == 'RELEASE':
-            if last_slot in detail:
-                wev(tv_sec, tv_usec, 3, ABS_MT_TRACKING_ID, -1)
-            for slot in detail.keys():
-                if slot == last_slot:
-                    continue
-                wev(tv_sec, tv_usec, 3, ABS_MT_SLOT, int(slot))
-                cur_slot = slot
-                wev(tv_sec, tv_usec, 3, ABS_MT_TRACKING_ID, -1)
-            wev(tv_sec, tv_usec, 0, 0, 0)
-        elif evtype == 'UPDATE':
-            if last_slot in detail:
-                finger(tv_sec, tv_usec, detail[last_slot])
-            for slot in detail.keys():
-                if slot == last_slot:
-                    continue
-                wev(tv_sec, tv_usec, 3, ABS_MT_SLOT, int(slot))
-                cur_slot = slot
-                finger(tv_sec, tv_usec, detail[slot])
-            wev(tv_sec, tv_usec, 0, 0, 0)
-        else:
-            print(f'invalid event type {evtype}', file=sys.stderr)
-            return
+        if last_slot in detail:
+            finger(tv_sec, tv_usec, detail[last_slot])
+        for slot in detail:
+            if slot == last_slot:
+                continue
+            wev(tv_sec, tv_usec, 3, ABS_MT_SLOT, int(slot))
+            cur_slot = slot
+            finger(tv_sec, tv_usec, detail[slot])
+        wev(tv_sec, tv_usec, 0, 0, 0)
 
 
 if options.grab:
@@ -443,9 +424,8 @@ class State():
             sec = to_sec(tv_sec, tv_usec)
             if RECORD:
                 if self.released:
-                    print(json.dumps(["RELEASE",
-                                      sec,
-                                      {slot_id: {} for slot_id in self.released.keys()}]))
+                    print(json.dumps([sec,
+                                      {slot_id: {"id": -1} for slot_id in self.released}]))
                 recorded = {}
                 for slot, finger in self.updated.items():
                     diff = {}
@@ -466,7 +446,7 @@ class State():
                         diff['touch_major'] = finger.touch_major
                     recorded[slot]=diff
                 if recorded:
-                    print(json.dumps(["UPDATE", sec, recorded]))
+                    print(json.dumps([sec, recorded]))
             for (slot_id, finger) in self.released.items():
                 finger.release(sec)
                 if DEBUG == 2:
