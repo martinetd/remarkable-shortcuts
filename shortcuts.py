@@ -144,7 +144,7 @@ def gen_event(descr):
             (sx, sy) = touch['start']
             (ex, ey) = touch['end']
             duration = touch['duration']
-            interval = touch.get('interval', 0.02)
+            interval = touch.get('interval', 0.01)
             time += touch.get('down_time', 0)
             pressure = touch.get('pressure', 70)
             id = touch.get('id', id+1)
