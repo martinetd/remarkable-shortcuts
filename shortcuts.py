@@ -143,8 +143,9 @@ def gen_finger(touch, index):
         if y != ny:
             y = ny
             ev['y'] = y
-        yield ['UPDATE', t, {'0': ev}]
-    yield ['RELEASE', start + duration, {'0': {}}]
+        # generate sync even if ev empty to keep touch alive
+        yield [t, ev]
+    yield [start + duration, {'id': -1}]
 
 
 def gen_event(descr):
@@ -167,35 +168,29 @@ def gen_event(descr):
     fingers_next = [next(finger) for finger in fingers]
     active = {}
     while fingers:
-        ev_time = min(fingers_next, key=lambda event: event[1])[1]
-        upd = {}
-        rel = {}
+        ev_time = min(fingers_next, key=lambda event: event[0])[0]
+        ev = {}
         i = 0
         while i < len(fingers):
-            if fingers_next[i][1] != ev_time:
+            if fingers_next[i][0] != ev_time:
                 i += 1
                 continue
-            if fingers_next[i][0] == 'RELEASE':
-                rel[active[fingers[i]]] = fingers_next[i][2]['0']
-                del active[fingers[i]]
-            else:
-                if fingers[i] not in active:
-                    j = 0
-                    while j in active.values():
-                        j += 1
-                    active[fingers[i]] = j
-                upd[active[fingers[i]]] = fingers_next[i][2]['0']
+            if fingers[i] not in active:
+                j = 0
+                while j in active.values():
+                    j += 1
+                active[fingers[i]] = j
+            ev[active[fingers[i]]] = fingers_next[i][1]
             try:
                 fingers_next[i] = next(fingers[i])
             except StopIteration:
+                del active[fingers[i]]
                 fingers.pop(i)
                 fingers_next.pop(i)
                 continue
             i += 1
-        if upd:
-            yield ['UPDATE', ev_time, upd]
-        if rel:
-            yield ['RELEASE', ev_time, rel]
+        if ev:
+            yield ['UPDATE', ev_time, ev]
 
 
 
