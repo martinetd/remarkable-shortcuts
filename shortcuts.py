@@ -549,6 +549,28 @@ ACTIONS = {
              end=(300, 300),
              duration=0.2),
     ],
+    'double_tap_right': [
+        dict(type='line',
+             start=(1000, 300),
+             end=(1000, 300),
+             duration=0.2),
+        dict(type='line',
+             down_time=0.4,
+             start=(1000, 300),
+             end=(1000, 300),
+             duration=0.2),
+    ],
+    'double_tap_top': [
+        dict(type='line',
+             start=(600, 1300),
+             end=(600, 1300),
+             duration=0.2),
+        dict(type='line',
+             down_time=0.4,
+             start=(600, 1300),
+             end=(600, 1300),
+             duration=0.2),
+    ],
 }
 
 FEATURES = [
