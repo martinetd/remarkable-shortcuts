@@ -49,4 +49,9 @@ run_generated double_tap_right -v | grep -q right \
 run_generated double_tap_top -v | grep -q top \
 	|| error "top didn't act on synthetic top"
 
+run_generated double_tap_left --record \
+		| run --replay -- -v \
+		| grep -q left \
+	|| error "replay of recording of synthetic left didn't recognize left"
+
 [ "$FAILED" = 0 ]

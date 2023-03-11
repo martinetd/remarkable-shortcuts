@@ -623,7 +623,7 @@ def parse(tv_sec, tv_usec, evtype, code, value):
 
 def handle_input():
     timeout = None
-    # NO_SLEEP actually needs to wait a bit for the very first input...
+    # NO_SLEEP actually waits a bit for pipe input
     if state.actions or NO_SLEEP:
         timeout = 0.05
     (ready, _, errors) = select.select([in_file], [], [in_file], timeout)
@@ -643,6 +643,10 @@ def handle_input():
         return False
     return True
 
+
+# wait for input to start
+if NO_SLEEP:
+    select.select([in_file], [], [])
 
 while handle_input():
     pass
