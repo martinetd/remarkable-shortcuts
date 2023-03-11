@@ -34,6 +34,8 @@ parser.add_option('--record', action='store_true',
                   help='record input to stdout (debug)')
 parser.add_option('--replay', action='store_true',
                   help='replay stdin (debug)')
+parser.add_option('--replay-action', action='store', type='string',
+                  help='replay given action (debug)')
 parser.add_option('--no-sleep', action='store_true',
                   help='do not sleep during replay (tests)')
 
@@ -249,10 +251,6 @@ def replay(source):
 
 if options.grab:
     grab()
-
-if options.replay:
-    replay(sys.stdin)
-    sys.exit(0)
 
 if options.daemonize:
     if not options.command:
@@ -483,6 +481,18 @@ ACTIONS = {
               end=(700, 1200),
               duration=0.5)])},
 }
+
+if options.replay:
+    replay(sys.stdin)
+    sys.exit(0)
+
+if options.replay_action:
+    action = [x for x in ACTIONS.values() if x['name'] == options.replay_action]
+    if not action:
+        print(f"action {options.replay_action} not found", file=sys.stderr)
+        sys.exit(1)
+    replay(action[0]['action']())
+    sys.exit(0)
 
 tracking = Tracking()
 state = State()
