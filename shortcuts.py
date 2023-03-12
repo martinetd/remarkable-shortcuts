@@ -23,6 +23,8 @@ parser.add_option('-v', '--verbose', action='count', default=0)
 parser.add_option('-e', '--event', action='store', type='string',
                   default='/dev/input/by-path/platform-30a40000.i2c-event',
                   help='path to event device or index')
+parser.add_option('-o', '--output', action='store', type='string',
+                  help='path to write replay event to, if not event file (for tests)')
 parser.add_option('-p', '--pidfile', action='store', type='string',
                   help='pidfile, also kills old instance if existed')
 parser.add_option('-D', '--daemonize', action='store_true',
@@ -92,6 +94,10 @@ RECORD = options.record
 
 # open file in binary mode
 in_file = os.open(infile_path, os.O_RDWR)
+if options.output:
+    out_file = os.open(options.output, os.O_WRONLY)
+else:
+    out_file = in_file
 
 def grab():
     retries = 10
@@ -209,7 +215,7 @@ def replay(source):
             print(f"{sec}.{usec:06}: Replay type {t} code {c}, value {v}",
                   file=sys.stderr)
         if not DRY_RUN:
-            os.write(in_file, struct.pack(FORMAT, sec, usec, t, c, v))
+            os.write(out_file, struct.pack(FORMAT, sec, usec, t, c, v))
 
     def finger(sec, usec, diff):
         if 'id' in diff:
@@ -685,6 +691,8 @@ def handle_input():
             return False
         parse(*struct.unpack(FORMAT, event))
     elif state.actions:
+        if DEBUG >= 1:
+            print("Replaying one action", file=sys.stderr)
         replay(state.actions.pop(0))
     elif NO_SLEEP:
         return False
@@ -702,4 +710,6 @@ while state.actions:
     replay(state.actions.pop(0))
 
 # unreachable...
+if out_file != in_file:
+    os.close(out_file)
 os.close(in_file)

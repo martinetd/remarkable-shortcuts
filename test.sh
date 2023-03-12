@@ -48,6 +48,9 @@ rgrep top run_replay tests/double-tap-top.record \
 rgrep top run_replay tests/double-tap-slow-top-no-event.record \
 	&& error "shouldn't trigger top on slow taps"
 
+[[ "$(run_replay tests/double-tap-left.record -o /dev/stdout | wc -c)" = 2520 ]] \
+	|| error "left replay does not have correct length"
+
 rgrep left run_generated double_tap_left \
 	|| error "left didn't act on synthetic left"
 rgrep right run_generated double_tap_right \
