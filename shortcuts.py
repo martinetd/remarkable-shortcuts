@@ -455,7 +455,8 @@ class Tracking():
                 continue
             if action:
                 if DEBUG >= 1:
-                    print(f"Detected {feature.get('name')}")
+                    print(f"Detected {feature.get('name')}",
+                          file=sys.stderr)
                 return action
             i += 1
 

@@ -13,7 +13,7 @@ run() {
 	done
 	shift
 	python3 ./shortcuts.py --no-sleep -e /dev/stdout "${first[@]}" \
-		| python3 ./shortcuts.py --no-sleep -e /dev/stdin -n "$@"
+		| python3 ./shortcuts.py --no-sleep -e /dev/stdin -n "$@" 2>&1
 }
 
 run_replay() {
