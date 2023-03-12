@@ -8,6 +8,7 @@ from __future__ import print_function
 import errno
 import fcntl
 import json
+import math
 import os
 import select
 import struct
@@ -367,8 +368,67 @@ def detect_double_tap(tracking, feature):
     # okay!
     return gen_event(feature['action'])
 
+def detect_line(tracking, feature):
+    cur = tracking.cur
+
+    # check we're line-ish:
+    # - length > min length
+    # - angle within min/max angle
+    # note our angle is between -180 and 180
+    try:
+        (dx, dy) = (cur.x - cur.trace[0]['x'], cur.y - cur.trace[0]['y'])
+    except KeyError as key:
+        if DEBUG > 1:
+            # apparently happens when we write to fd
+            print(f"first trace missing {key} ?! {cur.id}: {cur.trace[0]}",
+                  file=sys.stderr)
+        return None
+    length = math.sqrt(dx*dx + dy*dy)
+    if length < feature.get('min_length', 50):
+        return None
+    if length > feature.get('max_length', 5000):
+        return None
+    if dx == 0:
+        angle = math.copysign(180, dy)
+    elif dx > 0:
+        angle = math.atan(dy / dx) * 180 / math.pi
+    else:
+        angle = math.atan(dy / dx) * 180 / math.pi
+        angle = angle + 180 if angle > 0 else angle - 180
+    # normalize angle min/max, this is configurable as otherwise around 180
+    # is impossible to min/max...
+    if angle < feature.get('angle_base', -180):
+        angle += 360
+    if angle > feature.get('angle_base', -180) + 360:
+        angle -= 360
+    if angle < feature['min_angle']:
+        return None
+    if angle > feature['max_angle']:
+        return None
+
+    # swipe duration
+    if cur.down_duration > feature.get('duration_max', 3000):
+        return None
+    if cur.down_duration < feature.get('duration_min', 0):
+        return None
+
+    # check for min/max edges... Only check last position again.
+    if cur.x < feature.get('x_min', 0):
+        return None
+    if cur.y < feature.get('y_min', 0):
+        return None
+    if cur.x > feature.get('x_max', 1500):
+        return None
+    if cur.y > feature.get('y_max', 1900):
+        return None
+
+    # okay!
+    return gen_event(feature['action'])
+
+
 DETECT = {
     'double_tap': detect_double_tap,
+    'line': detect_line,
 }
 
 class Tracking():
@@ -386,7 +446,13 @@ class Tracking():
                       file=sys.stderr)
                 FEATURES.pop(i)
                 continue
-            action = detect(self, feature)
+            try:
+                action = detect(self, feature)
+            except KeyError as key:
+                print(f"Invalid feature missing key {key}: {feature}",
+                      file=sys.stderr)
+                FEATURES.pop(i)
+                continue
             if action:
                 if DEBUG >= 1:
                     print(f"Detected {feature.get('name')}")
@@ -502,7 +568,6 @@ ACTIONS = {
              end=(700, 1200),
              duration=0.5),
     ],
-    # for test
     'double_swipe_down_from_top': [
         dict(type='line',
              start=(700, 1819),
@@ -513,6 +578,7 @@ ACTIONS = {
              end=(750, 1200),
              duration=0.5),
     ],
+    # for test
     'double_tap_left': [
         dict(type='line',
              start=(300, 300),
@@ -568,6 +634,16 @@ FEATURES = [
         'type': 'double_tap',
         'y_min': 1200,
         'action': ACTIONS['swipe_down_from_top'],
+    },
+    {
+        'name': 'bottom right swipe down',
+        'type': 'line',
+        'min_angle': -135,
+        'max_angle': -45,
+        'max_length': 500,
+        'x_min': 700,
+        'y_max': 500,
+        'action': ACTIONS['double_swipe_down_from_top'],
     },
 ]
 
