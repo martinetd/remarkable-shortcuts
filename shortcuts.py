@@ -636,16 +636,6 @@ FEATURES = [
         'y_min': 1200,
         'action': ACTIONS['swipe_down_from_top'],
     },
-    {
-        'name': 'bottom right swipe down',
-        'type': 'line',
-        'min_angle': -135,
-        'max_angle': -45,
-        'max_length': 500,
-        'x_min': 700,
-        'y_max': 500,
-        'action': ACTIONS['double_swipe_down_from_top'],
-    },
 ]
 
 if options.replay:
