@@ -85,6 +85,17 @@ ABS_MT_POSITION_Y = 54
 ABS_MT_TRACKING_ID = 57
 ABS_MT_PRESSURE = 58
 
+CODES = {
+    0: "sync",
+    ABS_MT_SLOT: "slot",
+    ABS_MT_TOUCH_MAJOR: "touch_major",
+    ABS_MT_TOUCH_MINOR: "touch_minor",
+    ABS_MT_ORIENTATION: "orientation",
+    ABS_MT_POSITION_X: "position_x",
+    ABS_MT_POSITION_Y: "position_y",
+    ABS_MT_TRACKING_ID: "tracking_id",
+    ABS_MT_PRESSURE: "pressure",
+}
 
 EVENT_SIZE = struct.calcsize(FORMAT)
 DEBUG = options.verbose
@@ -661,7 +672,7 @@ state = State()
 
 def parse(tv_sec, tv_usec, evtype, code, value):
     if DEBUG == 3:
-        print(f"{tv_sec}.{tv_usec:06}: Event type {evtype} code {code}, value {value}",
+        print(f"{tv_sec}.{tv_usec:06}: Event type {evtype} code {CODES.get(code, 'unknown')} ({code}), value {value}",
               file=sys.stderr)
 
     if evtype == 0 and code == 0 and value == 0:
