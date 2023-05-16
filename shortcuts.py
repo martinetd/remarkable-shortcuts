@@ -362,9 +362,9 @@ def detect_double_tap(tracking, feature):
     cur = tracking.cur
 
     # ignore large touches (likely palm of hand)
-    if any(point.get('touch_major', 0) > 20 for point in cur.trace):
+    if any(point.get('touch_major', 0) > 30 for point in cur.trace):
         return None
-    if any(point.get('touch_major', 0) > 20 for point in prev.trace):
+    if any(point.get('touch_major', 0) > 30 for point in prev.trace):
         return None
 
     # total time with prev and current touch < 1s
