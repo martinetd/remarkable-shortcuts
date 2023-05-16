@@ -28,5 +28,5 @@ systemctl daemon-reload && systemctl enable --now shortcuts
   - [ ] gestures: first approximation checks just down and up coordinates? won't allow e.g. circles but that wouldn't be easy to do anyway.
   - [ ] could also use pressure e.g. only trigger heavy tap (easy)
   - [ ] eventually: check how to use major/minor and orientation, apparently large surface of contact? maybe for later...
-- [ ] add an enable/disable shortcut... When using keyboard close-by touches are incorrectly considered double-taps.
+- [x] add an enable/disable shortcut... When using keyboard close-by touches are incorrectly considered double-taps.
 - [ ] could imagine doodling with finger instead of pen by forwarding events to event1 ? (second alt mode, easier than taking pen)

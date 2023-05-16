@@ -357,39 +357,39 @@ class Finger():
 
 def detect_double_tap(tracking, feature):
     if not tracking.prev:
-        return None
+        return False
     prev = tracking.prev
     cur = tracking.cur
 
     # ignore large touches (likely palm of hand)
     if any(point.get('touch_major', 0) > 30 for point in cur.trace):
-        return None
+        return False
     if any(point.get('touch_major', 0) > 30 for point in prev.trace):
-        return None
+        return False
 
     # total time with prev and current touch < 1s
     if cur.up_sec - prev.down_sec > 1:
-        return None
+        return False
     # prev and current touch < 0.5s
     if prev.down_duration > 0.5 or cur.down_duration > 0.5:
-        return None
+        return False
     # prev and current touch area is small enough
     # for simplicity we only consider the last position
     if abs(prev.x - cur.x) > 50 or abs(prev.y - cur.y) > 50:
-        return None
+        return False
 
     # check for min/max edges... Only check last position again.
     if cur.x < feature.get('x_min', 0):
-        return None
+        return False
     if cur.y < feature.get('y_min', 0):
-        return None
+        return False
     if cur.x > feature.get('x_max', 1500):
-        return None
+        return False
     if cur.y > feature.get('y_max', 1900):
-        return None
+        return False
 
     # okay!
-    return gen_event(feature['action'])
+    return True
 
 def detect_line(tracking, feature):
     cur = tracking.cur
@@ -405,12 +405,12 @@ def detect_line(tracking, feature):
             # apparently happens when we write to fd
             print(f"first trace missing {key} ?! {cur.id}: {cur.trace[0]}",
                   file=sys.stderr)
-        return None
+        return False
     length = math.sqrt(dx*dx + dy*dy)
     if length < feature.get('min_length', 50):
-        return None
+        return False
     if length > feature.get('max_length', 5000):
-        return None
+        return False
     if dx == 0:
         angle = math.copysign(180, dy)
     elif dx > 0:
@@ -425,28 +425,28 @@ def detect_line(tracking, feature):
     if angle > feature.get('angle_base', -180) + 360:
         angle -= 360
     if angle < feature['min_angle']:
-        return None
+        return False
     if angle > feature['max_angle']:
-        return None
+        return False
 
     # swipe duration
     if cur.down_duration > feature.get('duration_max', 3000):
-        return None
+        return False
     if cur.down_duration < feature.get('duration_min', 0):
-        return None
+        return False
 
     # check for min/max edges... Only check last position again.
     if cur.x < feature.get('x_min', 0):
-        return None
+        return False
     if cur.y < feature.get('y_min', 0):
-        return None
+        return False
     if cur.x > feature.get('x_max', 1500):
-        return None
+        return False
     if cur.y > feature.get('y_max', 1900):
-        return None
+        return False
 
     # okay!
-    return gen_event(feature['action'])
+    return True
 
 
 DETECT = {
@@ -457,12 +457,16 @@ DETECT = {
 class Tracking():
     prev = None
     cur = None
+    active = True
 
     def update(self, finger):
         self.cur = finger
         i = 0
         while i < len(FEATURES):
             feature = FEATURES[i]
+            if not self.active and not feature.get('allow_inactive', False):
+                i += 1
+                continue
             detect = DETECT.get(feature['type'])
             if not detect:
                 print(f"Invalid feature type {feature['type']}, skipping",
@@ -470,17 +474,28 @@ class Tracking():
                 FEATURES.pop(i)
                 continue
             try:
-                action = detect(self, feature)
+                found = detect(self, feature)
             except KeyError as key:
                 print(f"Invalid feature missing key {key}: {feature}",
                       file=sys.stderr)
                 FEATURES.pop(i)
                 continue
-            if action:
+            if found:
                 if DEBUG >= 1:
                     print(f"Detected {feature.get('name')}",
                           file=sys.stderr)
-                return action
+                if 'action' in feature:
+                    return gen_event(feature['action'])
+                match feature.get('special'):
+                    case 'toggle':
+                        self.active = not self.active
+                        if DEBUG >= 1:
+                            print(f'New active: {self.active}',
+                                  file=sys.stderr)
+                    case special:
+                        print(f"Feature {feature.get('name')} had no action/unknown special {special}",
+                              file=sys.stderr)
+                break
             i += 1
 
         self.prev = finger
@@ -658,6 +673,17 @@ FEATURES = [
         'type': 'double_tap',
         'y_min': 1200,
         'action': ACTIONS['swipe_down_from_top'],
+    },
+    {
+        # downwards line in bottom left corner
+        'name': 'toggle_active',
+        'allow_inactive': True,
+        'type': 'line',
+        'x_max': 500,
+        'y_max': 500,
+        'min_angle': -135,
+        'max_angle': -45,
+        'special': 'toggle',
     },
 ]
 
